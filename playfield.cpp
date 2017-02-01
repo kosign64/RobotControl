@@ -13,20 +13,6 @@
 #define ROBOT_RADIUS 60
 #define POINT_RADIUS 10
 
-inline static float length(Point2D &p1, Point2D &p2)
-{
-    return sqrt(pow(p1.x - p2.x, 2) +
-                pow(p1.y - p2.y, 2));
-}
-
-inline static Point2D center(Point2D &p1, Point2D &p2)
-{
-    Point2D p;
-    p.x = (p1.x + p2.x) / 2;
-    p.y = (p1.y + p2.y) / 2;
-    return p;
-}
-
 PlayField::PlayField(QWidget *parent) : QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -40,106 +26,91 @@ PlayField::~PlayField()
 
 void PlayField::paintEvent(QPaintEvent *)
 {
-    QPainter painter(this);
-    painter.setBrush(QBrush(Qt::red));
-    painter.setPen(Qt::NoPen);
+    double scaleFactor;
+    int robotRadius;
+    int pointRadius;
+    int propWidth;
+    int propHeight;
+    Point2D origin;
+    Point2D boardOrigin;
+    int boardWidth;
+    int boardHeight;
+    int letterSize;
 
-    // Draw everything
+
     if((this->width() / RATIO) > this->height())
     {
-        int propWidth = this->height() * RATIO;
-        painter.drawRect(this->width() / 2 - propWidth / 2, 0,
-                         propWidth, this->height());
-        float scaleFactor = this->height() / ACTUAL_HEIGHT;
-        painter.setBrush(QBrush(Qt::black));
-        painter.drawRect(RECT_X0 / X_SCALE * scaleFactor +
-                         this->width() / 2 - propWidth / 2,
-                         RECT_Y0 * scaleFactor,
-                         RECT_WIDTH * scaleFactor / X_SCALE,
-                         RECT_HEIGHT * scaleFactor);
-        foreach(Robot2D robot, robots)
-        {
-            painter.setBrush(QBrush(Qt::blue));
-            painter.setPen(QPen(Qt::blue));
-            painter.drawEllipse(robot.center.x * scaleFactor +
-                                this->width() / 2 - propWidth / 2 - ROBOT_RADIUS * scaleFactor / 2,
-                                robot.center.y * scaleFactor - ROBOT_RADIUS * scaleFactor / 2,
-                                ROBOT_RADIUS * scaleFactor,
-                                ROBOT_RADIUS * scaleFactor);
-            painter.setBrush(QBrush(Qt::white));
-            painter.setPen(QPen(Qt::white));
-            painter.drawLine(robot.center.x * scaleFactor +
-                             this->width() / 2 - propWidth / 2, robot.center.y * scaleFactor,
-                             (30 * cos(robot.angle) + robot.center.x) * scaleFactor +
-                             this->width() / 2 - propWidth / 2,
-                             (30 * sin(robot.angle) + robot.center.y) * scaleFactor);
-            painter.setBrush(QBrush(Qt::white));
-            for(size_t i = 0; i < (sizeof(robot.points) / sizeof(robot.points[0])); ++i)
-            {
-                Point2D point = robot.points[i];
-                painter.drawEllipse(point.x * scaleFactor +
-                                    this->width() / 2 - propWidth / 2 -
-                                    POINT_RADIUS * scaleFactor / 2,
-                                    point.y * scaleFactor -
-                                    POINT_RADIUS * scaleFactor / 2,
-                                    POINT_RADIUS * scaleFactor,
-                                    POINT_RADIUS * scaleFactor);
-            }
-            painter.setPen(QPen(Qt::red));
-            painter.setFont(QFont("Serif", this->height() / 15));
-            painter.drawText(robot.center.x * scaleFactor +
-                             this->width() / 2 - propWidth / 2,
-                             robot.center.y * scaleFactor,
-                             QString::number(robot.number));
-        }
+        propWidth = this->height() * RATIO;
+        propHeight = this->height();
+        scaleFactor = this->height() / ACTUAL_HEIGHT;
+        origin.x = this->width() / 2 - propWidth / 2;
+        origin.y = 0;
     }
     else
     {
-        int propHeight = this->width() / RATIO;
-        painter.drawRect(0, this->height() / 2 - propHeight / 2,
-                         this->width(), propHeight);
-        float scaleFactor = this->width() / ACTUAL_WIDTH;
-        painter.setBrush(QBrush(Qt::black));
-        painter.drawRect((RECT_X0 / X_SCALE) * scaleFactor,
-                         RECT_Y0 * scaleFactor + this->height() / 2 -
-                         propHeight / 2,
-                         RECT_WIDTH * scaleFactor / X_SCALE,
-                         RECT_HEIGHT * scaleFactor);
-        foreach(Robot2D robot, robots)
+        propWidth = this->width();
+        propHeight = this->width() / RATIO;
+        scaleFactor = this->width() / ACTUAL_WIDTH;
+        origin.x = 0;
+        origin.y = this->height() / 2 - propHeight / 2;
+    }
+    boardOrigin.x = (RECT_X0 / X_SCALE) * scaleFactor + origin.x;
+    boardOrigin.y = RECT_Y0 * scaleFactor + origin.y;
+    boardWidth = RECT_WIDTH * scaleFactor / X_SCALE;
+    boardHeight = RECT_HEIGHT * scaleFactor;
+    robotRadius = ROBOT_RADIUS * scaleFactor;
+    pointRadius = POINT_RADIUS * scaleFactor;
+    letterSize = propHeight / 15;
+
+    // Draw board
+    QPainter painter(this);
+    painter.setBrush(QBrush(Qt::red));
+    painter.setPen(Qt::NoPen);
+    painter.drawRect(origin.x, origin.y,
+                     propWidth, propHeight);
+    painter.setBrush(QBrush(Qt::black));
+    painter.drawRect(boardOrigin.x,
+                     boardOrigin.y,
+                     boardWidth,
+                     boardHeight);
+    // Draw robots
+    foreach(Robot2D robot, robots)
+    {
+        robot.center.x = robot.center.x * scaleFactor + origin.x;
+        robot.center.y = robot.center.y * scaleFactor + origin.y;
+
+        // Draw robot circle
+        painter.setBrush(QBrush(Qt::blue));
+        painter.setPen(QPen(Qt::blue));
+        painter.drawEllipse(robot.center.x - robotRadius / 2,
+                            robot.center.y - robotRadius / 2,
+                            robotRadius,
+                            robotRadius);
+        // Draw robot direction
+        painter.setBrush(QBrush(Qt::white));
+        painter.setPen(QPen(Qt::white));
+        painter.drawLine(robot.center.x, robot.center.y,
+                         robotRadius / 2 * cos(robot.angle) + robot.center.x,
+                         robotRadius / 2 * sin(robot.angle) + robot.center.y);
+
+        // Draw robot points
+        for(size_t i = 0; i < (sizeof(robot.points) / sizeof(robot.points[0])); ++i)
         {
-            painter.setBrush(QBrush(Qt::blue));
-            painter.setPen(QPen(Qt::blue));
-            painter.drawEllipse(robot.center.x * scaleFactor - ROBOT_RADIUS * scaleFactor / 2,
-                                robot.center.y * scaleFactor +
-                                this->height() / 2 - propHeight / 2 - ROBOT_RADIUS * scaleFactor / 2,
-                                ROBOT_RADIUS * scaleFactor,
-                                ROBOT_RADIUS * scaleFactor);
-            painter.setBrush(QBrush(Qt::white));
-            painter.setPen(QPen(Qt::white));
-            painter.drawLine(robot.center.x * scaleFactor, robot.center.y * scaleFactor +
-                             this->height() / 2 - propHeight / 2,
-                             (30 * cos(robot.angle) + robot.center.x) * scaleFactor,
-                             (30 * sin(robot.angle) + robot.center.y) * scaleFactor +
-                             this->height() / 2 - propHeight / 2);
-            painter.setBrush(QBrush(Qt::white));
-            for(size_t i = 0; i < (sizeof(robot.points) / sizeof(robot.points[0])); ++i)
-            {
-                Point2D point = robot.points[i];
-                painter.drawEllipse(point.x * scaleFactor -
-                                    POINT_RADIUS * scaleFactor / 2,
-                                    point.y * scaleFactor +
-                                    this->height() / 2 - propHeight / 2 -
-                                    POINT_RADIUS * scaleFactor / 2,
-                                    POINT_RADIUS * scaleFactor,
-                                    POINT_RADIUS * scaleFactor);
-            }
-            painter.setPen(QPen(Qt::red));
-            painter.setFont(QFont("Serif", 20));
-            painter.drawText(robot.center.x * scaleFactor,
-                             robot.center.y * scaleFactor +
-                             this->height() / 2 - propHeight / 2,
-                             QString::number(robot.number));
+            Point2D point = robot.points[i];
+            point.x = point.x * scaleFactor + origin.x;
+            point.y = point.y * scaleFactor + origin.y;
+            painter.drawEllipse(point.x - pointRadius / 2,
+                                point.y - pointRadius / 2,
+                                pointRadius,
+                                pointRadius);
         }
+
+        // Draw robot number
+        painter.setPen(QPen(Qt::red));
+        painter.setFont(QFont("Serif", letterSize));
+        painter.drawText(robot.center.x - robotRadius / 4,
+                         robot.center.y - robotRadius / 1.5,
+                         QString::number(robot.number));
     }
 }
 
