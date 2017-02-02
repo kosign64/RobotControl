@@ -26,7 +26,7 @@ private:
     bool start;
     State state;
 
-    void findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector);
+    bool findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector);
 
     static double length(const Point2D &p1, const Point2D &p2);
     static Point2D center(Point2D &p1, Point2D &p2);
