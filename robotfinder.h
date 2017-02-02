@@ -12,10 +12,19 @@ public:
     static Robot2D &getRobotByNumber(RobotVector &vector, int number);
 
 private:
+
+    enum State
+    {
+        RUN_ROBOT,
+        WAIT,
+        CHECK_ROBOT
+    };
+
     RobotVector robotsPrev;
     RobotVector robotsStart;
     bool findCorrespondence;
     bool start;
+    State state;
 
     void findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector);
 

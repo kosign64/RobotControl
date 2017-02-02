@@ -14,6 +14,9 @@
 #define VR1 1
 #define VR0 0
 
+#define FORWARD_BYTE (_BV(G) | _BV(DL) | _BV(VL1) | _BV(DR) | _BV(VR1))
+#define STOP_BYTE (_BV(G))
+
 #define RATIO (4 / 3.f)
 
 // width = 4132 - 386 = 3746
