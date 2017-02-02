@@ -15,13 +15,19 @@ public:
 protected:
     void paintEvent(QPaintEvent *);
     void timerEvent(QTimerEvent *);
+    void mousePressEvent(QMouseEvent *ev);
 
 private:
-    RobotVector robots;
-    PointVector points;
+    RobotVector m_robots;
+    double m_scaleFactor;
+    Point2D m_origin;
+    Point2D m_goal;
+
+signals:
+    void sendGoal(Point2D goal);
 
 public slots:
-    void getRobots(RobotVector rob) {robots = rob;}
+    void getRobots(RobotVector rob) {m_robots = rob;}
 };
 
 #endif // PLAYFIELD_H

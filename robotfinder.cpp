@@ -2,7 +2,6 @@
 #include <cmath>
 #include <cassert>
 #include <QDebug>
-//#include <unistd.h>
 #include <iostream>
 
 RobotFinder::RobotFinder(QObject *parent) : QObject(parent),
