@@ -20,8 +20,8 @@ void RobotFinder::getPoints(PointVector &pointVector)
 
     static int robotNumber = robots.size() + 1;
     static int checkingRobotNumber = 1;
-    static const int stopTime = 3500;
-    static const int waitTime = 5000;
+    static const int stopTime = 1500;
+    static const int waitTime = 1500;
     if(checkingRobotNumber < robotNumber)
     {
         RobotData data;
@@ -32,7 +32,6 @@ void RobotFinder::getPoints(PointVector &pointVector)
             if(start)
             {
                 robotsStart = robots;
-                start = false;
             }
             static int stopIteration = 0;
             data.number = checkingRobotNumber;
@@ -84,7 +83,7 @@ void RobotFinder::getPoints(PointVector &pointVector)
             {
                 currentRob.angle = startRob.angle + M_PI;
             }
-            start = true;
+            robotsStart = robots;
             checkingRobotNumber++;
             state = RUN_ROBOT;
             break;
@@ -95,71 +94,8 @@ void RobotFinder::getPoints(PointVector &pointVector)
         emit sendRobots(robots);
     }
     robotsPrev = robots;
+    start = false;
 }
-
-//    if(findCorrespondence)
-//    {
-//        static int n = 0;
-//        static int l = 1;
-//        static int robotNumber = robots.size() + 1;
-//        if(l < robotNumber)
-//        {
-//            // Start RobotMovement
-//            RobotData data;
-//            data.number = l;
-//            data.cByte = _BV(G) | _BV(DL) | _BV(VL1) | _BV(DR) | _BV(VR1);
-//            RobotDataVector vec;
-//            vec.append(data);
-//            emit sendRobotData(vec);
-//            if(++n > 3500)
-//            {
-//                // Stop Movement
-//                data.number = l;
-//                data.cByte = _BV(G);
-//                vec[0] = data;
-//                emit sendRobotData(vec);
-
-//                int movedStart, movedCurrent;
-//                findMovedRobot(robotsStart, robots,
-//                               movedStart, movedCurrent);
-//                Robot2D &startRob = robotsStart[movedStart];
-//                Robot2D &currentRob = robots[movedCurrent];
-//                Robot2D &otherRob = getRobotByNumber(robots,
-//                                                  l);
-//                otherRob.number = currentRob.number;
-//                currentRob.number = l;
-//                Point2D estimated1;
-//                Point2D estimated2;
-//                estimated1.x = startRob.center.x + 20 * cos(startRob.angle);
-//                estimated1.y = startRob.center.y + 20 * sin(startRob.angle);
-//                estimated2.x = startRob.center.x + 20 * cos(startRob.angle + M_PI);
-//                estimated2.y = startRob.center.y + 20 * sin(startRob.angle + M_PI);
-//                if(length(estimated1, currentRob.center) <
-//                        length(estimated2, currentRob.center))
-//                {
-//                    currentRob.angle = startRob.angle;
-//                }
-//                else
-//                {
-//                    currentRob.angle = startRob.angle + M_PI;
-//                }
-//                robotsStart = robots;
-//                n = 0;
-//                l++;
-//            }
-//        }
-//        else
-//        {
-//            findCorrespondence = false;
-//        }
-//    }
-//    else
-//    {
-//        emit sendRobots(robots);
-//    }
-//    robotsPrev = robots;
-//    start = false;
-//}
 
 bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector)
 {
