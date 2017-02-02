@@ -3,19 +3,18 @@
 #include <QTcpSocket>
 
 Socket::Socket(QObject *parent) : QObject(parent),
-    connected(false),
-    dir(STOP),
-    pointSize(255)
+    m_connected(false),
+    m_pointSize(255)
 {
-    socket = new QTcpSocket(this);
+    m_socket = new QTcpSocket(this);
     RobotData data;
     data.number = 0;
     data.cByte = _BV(G);
-    robotVector.append(data);
-    connect(socket, &QTcpSocket::readyRead, this, &Socket::readyRead);
-    connect(socket, &QTcpSocket::disconnected, this,
+    m_robotVector.append(data);
+    connect(m_socket, &QTcpSocket::readyRead, this, &Socket::readyRead);
+    connect(m_socket, &QTcpSocket::disconnected, this,
             &Socket::disconnected);
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this,
+    connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this,
             SLOT(getError(QAbstractSocket::SocketError)));
 }
 
@@ -28,23 +27,23 @@ Socket::~Socket()
 
 void Socket::readyRead()
 {
-    if(socket->bytesAvailable() >= sizeof(uint16_t))
+    if((size_t)m_socket->bytesAvailable() >= sizeof(uint16_t))
     {
-        socket->read((char*)&pointSize, sizeof(uint16_t));
+        m_socket->read((char*)&m_pointSize, sizeof(uint16_t));
     }
-    if(socket->bytesAvailable() >= ((sizeof(Point2D)) * pointSize))
+    if((size_t)m_socket->bytesAvailable() >= ((sizeof(Point2D)) * m_pointSize))
     {
-        points.resize(pointSize);
-        for(int i = 0; i < pointSize; ++i)
+        m_points.resize(m_pointSize);
+        for(int i = 0; i < m_pointSize; ++i)
         {
             Point2D point;
-            socket->read((char*)&point, sizeof(point));
-            points[i] = point;
+            m_socket->read((char*)&point, sizeof(point));
+            m_points[i] = point;
         }
 
         sendWheels();
-        pointSize = 255;
-        emit sendPoints(points);
+        m_pointSize = 255;
+        emit sendPoints(m_points);
     }
 }
 
@@ -62,28 +61,27 @@ void Socket::getError(QAbstractSocket::SocketError error)
 
 void Socket::sendWheels()
 {
-    for(int i = 0; i < robotVector.size(); ++i)
+    for(int i = 0; i < m_robotVector.size(); ++i)
     {
-        RobotData &data = robotVector[i];
-        //qDebug() << data.number << data.cByte;
-        socket->write((char*)&data, sizeof(data));
+        RobotData &data = m_robotVector[i];
+        m_socket->write((char*)&data, sizeof(data));
     }
-    socket->flush();
+    m_socket->flush();
 }
 
 bool Socket::connectToHost(const QString &address)
 {
-    if(!connected)
+    if(!m_connected)
     {
-        socket->connectToHost(address, 3336);
-        if(socket->waitForConnected(2000))
+        m_socket->connectToHost(address, 3336);
+        if(m_socket->waitForConnected(2000))
         {
-            connected = true;
+            m_connected = true;
             RobotData data;
             data.number = 1;
             data.cByte = 0;
-            socket->write((char*)&data, sizeof(data));
-            socket->flush();
+            m_socket->write((char*)&data, sizeof(data));
+            m_socket->flush();
             qDebug() << "Connected to " << address;
             return true;
         }

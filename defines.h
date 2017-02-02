@@ -16,6 +16,9 @@
 
 #define FORWARD_BYTE (_BV(G) | _BV(DL) | _BV(VL1) | _BV(DR) | _BV(VR1))
 #define STOP_BYTE (_BV(G))
+#define LEFT_BYTE (_BV(G) | _BV(VL0) | _BV(DL))
+#define RIGHT_BYTE (_BV(G) | _BV(DR) | _BV(VR0))
+#define BACKWARD_BYTE (_BV(G) | _BV(VL1) | _BV(VR1))
 
 #define RATIO (4 / 3.f)
 

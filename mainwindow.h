@@ -10,6 +10,7 @@ class QPushButton;
 class Socket;
 class PlayField;
 class RobotFinder;
+class Controller;
 
 class MainWindow : public QMainWindow
 {
@@ -32,6 +33,7 @@ private:
     PlayField *field;
     RobotFinder *robotFinder;
     QVector <Robot2D> robots;
+    Controller *controller;
 
     bool upPressed;
     bool downPressed;
@@ -49,7 +51,7 @@ private slots:
     void onConnectClick();
 
 public slots:
-    void getRobots(QVector <Robot2D> robs);
+
 };
 
 #endif // MAINWINDOW_H
