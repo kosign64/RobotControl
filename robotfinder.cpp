@@ -14,7 +14,7 @@ RobotFinder::RobotFinder(QObject *parent) : QObject(parent),
 void RobotFinder::getPoints(PointVector &pointVector)
 {
     RobotVector robots;
-    findRobotsFromPoints(robots, pointVector);
+    if(!findRobotsFromPoints(robots, pointVector)) return;
     if(findCorrespondence)
     {
         static int n = 0;
@@ -84,7 +84,7 @@ void RobotFinder::getPoints(PointVector &pointVector)
     start = false;
 }
 
-void RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector)
+bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector)
 {
     PointVector pointsRaw = pointVector;
     for(int i = 0; i < pointsRaw.size(); ++i)
@@ -208,9 +208,11 @@ void RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
     {
         if(robotVector.size() != robotsStart.size())
         {
-            return;
+            return false;
         }
     }
+
+    return true;
 }
 
 void RobotFinder::findMovedRobot(const RobotVector &start,
