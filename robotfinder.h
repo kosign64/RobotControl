@@ -20,16 +20,15 @@ private:
         CHECK_ROBOT
     };
 
-    RobotVector robotsPrev;
-    RobotVector robotsStart;
-    bool findCorrespondence;
-    bool start;
-    State state;
+    RobotVector m_robotsPrev;
+    RobotVector m_robotsStart;
+    bool m_start;
+    State m_state;
 
-    bool findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector);
+    bool findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector) const;
 
     static double length(const Point2D &p1, const Point2D &p2);
-    static Point2D center(Point2D &p1, Point2D &p2);
+    static Point2D center(const Point2D &p1, const Point2D &p2);
     static void findMovedRobot(const RobotVector &start,
                               const RobotVector &current,
                               int &movedStart,

@@ -2,12 +2,12 @@
 #include <cmath>
 #include <cassert>
 #include <QDebug>
-#include <unistd.h>
+//#include <unistd.h>
+#include <iostream>
 
 RobotFinder::RobotFinder(QObject *parent) : QObject(parent),
-    findCorrespondence(true),
-    start(true),
-    state(RUN_ROBOT)
+    m_start(true),
+    m_state(RUN_ROBOT)
 {
 
 }
@@ -18,20 +18,20 @@ void RobotFinder::getPoints(PointVector &pointVector)
     if(!findRobotsFromPoints(robots, pointVector)) return;
     if(robots.isEmpty()) return;
 
-    static int robotNumber = robots.size() + 1;
+    static int numberOfRobots = robots.size() + 1;
     static int checkingRobotNumber = 1;
     static const int stopTime = 1500;
     static const int waitTime = 1500;
-    if(checkingRobotNumber < robotNumber)
+    if(checkingRobotNumber < numberOfRobots)
     {
         RobotData data;
         RobotDataVector vec;
-        switch (state)
+        switch (m_state)
         {
         case RUN_ROBOT:
-            if(start)
+            if(m_start)
             {
-                robotsStart = robots;
+                m_robotsStart = robots;
             }
             static int stopIteration = 0;
             data.number = checkingRobotNumber;
@@ -41,7 +41,7 @@ void RobotFinder::getPoints(PointVector &pointVector)
             if(++stopIteration > stopTime)
             {
                 stopIteration = 0;
-                state = WAIT;
+                m_state = WAIT;
             }
             break;
 
@@ -54,22 +54,24 @@ void RobotFinder::getPoints(PointVector &pointVector)
             if(++waitIteration > waitTime)
             {
                 waitIteration = 0;
-                state = CHECK_ROBOT;
+                m_state = CHECK_ROBOT;
             }
             break;
 
         case CHECK_ROBOT:
             int movedStart, movedCurrent;
-            findMovedRobot(robotsStart, robots,
+            findMovedRobot(m_robotsStart, robots,
                            movedStart, movedCurrent);
-            Robot2D &startRob = robotsStart[movedStart];
+            Robot2D &startRob = m_robotsStart[movedStart];
             Robot2D &currentRob = robots[movedCurrent];
+            // Robot, that already has checkingRobotNumber
             Robot2D &otherRob = getRobotByNumber(robots,
                                               checkingRobotNumber);
             otherRob.number = currentRob.number;
             currentRob.number = checkingRobotNumber;
             Point2D estimated1;
             Point2D estimated2;
+            // Find robot direction
             estimated1.x = startRob.center.x + 20 * cos(startRob.angle);
             estimated1.y = startRob.center.y + 20 * sin(startRob.angle);
             estimated2.x = startRob.center.x + 20 * cos(startRob.angle + M_PI);
@@ -83,9 +85,9 @@ void RobotFinder::getPoints(PointVector &pointVector)
             {
                 currentRob.angle = startRob.angle + M_PI;
             }
-            robotsStart = robots;
+            m_robotsStart = robots;
             checkingRobotNumber++;
-            state = RUN_ROBOT;
+            m_state = RUN_ROBOT;
             break;
         }
     }
@@ -93,11 +95,11 @@ void RobotFinder::getPoints(PointVector &pointVector)
     {
         emit sendRobots(robots);
     }
-    robotsPrev = robots;
-    start = false;
+    m_robotsPrev = robots;
+    m_start = false;
 }
 
-bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector)
+bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector) const
 {
     PointVector pointsRaw = pointVector;
     for(int i = 0; i < pointsRaw.size(); ++i)
@@ -135,6 +137,7 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
     {
         for(int j = i + 1; j < points.size(); ++j)
         {
+            // Check if two points belong to one robot
             if(length(points[i], points[j]) < 22)
             {
                 Robot2D robot;
@@ -152,7 +155,7 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                                      robot.points[0].x - robot.points[1].x);
                 robot.center = center(robot.points[0], robot.points[1]);
                 robot.angle = angle + M_PI / 2.;
-                if(start)
+                if(m_start)
                 {
                     robotNum++;
                     robot.number = robotNum;
@@ -160,34 +163,33 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                 else
                 {
                     double minDist = 10000;
-                    int nearest = -1;
-                    for(int k = 0; k < robotsPrev.size(); ++k)
+                    int nearest;
+                    for(int k = 0; k < m_robotsPrev.size(); ++k)
                     {
                         double dist = length(robot.center,
-                                             robotsPrev[k].center);
+                                             m_robotsPrev[k].center);
                         if(dist < minDist)
                         {
                             minDist = dist;
                             nearest = k;
                         }
                     }
-                    robot.number = robotsPrev[nearest].number;
+                    robot.number = m_robotsPrev[nearest].number;
 
                     //Angle
-
-                    bool dontCare = false;
+                    bool needFix = true;
                     double angle;
 
-                    if((robotsPrev[nearest].angle > (3.75 * M_PI / 2.) ||
-                        (robotsPrev[nearest].angle < M_PI / 4.)) &&
-                            (fabs(robotsPrev[nearest].angle - robot.angle) > (0.3 * M_PI)))
+                    if((m_robotsPrev[nearest].angle > (3.75 * M_PI / 2.) ||
+                        (m_robotsPrev[nearest].angle < M_PI / 4.)) &&
+                            (fabs(m_robotsPrev[nearest].angle - robot.angle) > (0.3 * M_PI)))
                     {
-                        if(robotsPrev[nearest].angle > (3.75 * M_PI / 2.))
+                        if(m_robotsPrev[nearest].angle > (3.75 * M_PI / 2.))
                         {
                             if(robot.angle < (M_PI / 4.))
                             {
                                 angle = robot.angle;
-                                dontCare = true;
+                                needFix = false;
                             }
                         }
                         else
@@ -195,14 +197,14 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                             if(robot.angle > (M_PI / 2.))
                             {
                                 angle = robot.angle + M_PI;
-                                dontCare = true;
+                                needFix = false;
                             }
                         }
                     }
-                    if(!dontCare)
+                    if(needFix)
                     {
-                        if(fabs(robot.angle - robotsPrev[nearest].angle) <
-                                fabs((robot.angle + M_PI * 0.9) - robotsPrev[nearest].angle))
+                        if(fabs(robot.angle - m_robotsPrev[nearest].angle) <
+                                fabs((robot.angle + M_PI * 0.9) - m_robotsPrev[nearest].angle))
                         {
                             angle = robot.angle;
                         }
@@ -217,9 +219,9 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
             }
         }
     }
-    if(!start)
+    if(!m_start)
     {
-        if(robotVector.size() != robotsStart.size())
+        if(robotVector.size() != m_robotsStart.size())
         {
             return false;
         }
@@ -244,7 +246,6 @@ void RobotFinder::findMovedRobot(const RobotVector &start,
         for(int j = 0; j < current.size(); ++j)
         {
             double dist = length(start[i].center, current[j].center);
-            //qDebug() << dist;
             if(dist < minDists[i])
             {
                 currentIndex[i] = j;
@@ -252,7 +253,6 @@ void RobotFinder::findMovedRobot(const RobotVector &start,
             }
         }
     }
-    //qDebug() << minDists[0] << minDists[1];
     double maxDist = -1;
     for(int i = 0; i < minDists.size(); ++i)
     {
@@ -271,7 +271,7 @@ double RobotFinder::length(const Point2D &p1, const Point2D &p2)
                 pow(p1.y - p2.y, 2));
 }
 
-Point2D RobotFinder::center(Point2D &p1, Point2D &p2)
+Point2D RobotFinder::center(const Point2D &p1, const Point2D &p2)
 {
     Point2D p;
     p.x = (p1.x + p2.x) / 2;
@@ -286,6 +286,6 @@ Robot2D &RobotFinder::getRobotByNumber(RobotVector &vector, int number)
         if(vector[i].number == number) return vector[i];
     }
 
-    qDebug() << "ERROR!!!" << number << vector[0].number << vector[1].number;
-    return vector[0];
+    std::cerr << "Error: Can't get robot by ID" << std::endl;
+    exit(-1);
 }
