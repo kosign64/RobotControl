@@ -10,6 +10,7 @@ class RobotFinder : public QObject
 public:
     explicit RobotFinder(QObject *parent = 0);
     static Robot2D &getRobotByNumber(RobotVector &vector, int number);
+    static double length(const Point2D &p1, const Point2D &p2);
 
 private:
 
@@ -27,7 +28,6 @@ private:
 
     bool findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector) const;
 
-    static double length(const Point2D &p1, const Point2D &p2);
     static Point2D center(const Point2D &p1, const Point2D &p2);
     static void findMovedRobot(const RobotVector &start,
                               const RobotVector &current,

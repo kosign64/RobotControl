@@ -12,6 +12,7 @@ TARGET = RobotControl
 TEMPLATE = app
 CONFIG += c++11
 
+DEFINES += FL_CPP11
 
 SOURCES += main.cpp\
         mainwindow.cpp \
