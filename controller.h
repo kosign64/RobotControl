@@ -44,6 +44,8 @@ private:
     void controlAction();
     void dumbController(const Robot2D &robot);
     void fuzzyController(const Robot2D &robot);
+    static double radians(double degrees) {return degrees * M_PI / 180.;}
+    static double degrees(double radians) {return radians * 180. / M_PI;}
 
 signals:
     void sendRobotData(RobotDataVector data);
