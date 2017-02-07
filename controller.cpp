@@ -19,20 +19,20 @@ Controller::Controller(QObject *parent) : QObject(parent),
     m_obstacleDistance->setRange(0, 800);
     m_goalAngle->setRange(-M_PI, M_PI);
     m_obstacleAngle->setRange(-M_PI, M_PI);
-    m_goalDistance->addTerm(new Ramp("LOW", 50, 15));
-    m_goalDistance->addTerm(new Ramp("HIGH", 15, 50));
-    m_obstacleDistance->addTerm(new Ramp("LOW", 350, 300));
-    m_obstacleDistance->addTerm(new Ramp("HIGH", 300, 350));
-    m_goalAngle->addTerm(new Ramp("LEFT_BEHIND", radians(45), radians(80)));
-    m_goalAngle->addTerm(new Triangle("LEFT", radians(80), radians(45), 0));
-    m_goalAngle->addTerm(new Triangle("CENTER", radians(-45), 0, radians(45)));
-    m_goalAngle->addTerm(new Triangle("RIGHT", 0, radians(-45), radians(-80)));
-    m_goalAngle->addTerm(new Ramp("RIGHT_BEHIND", radians(-45), radians(-80)));
-    m_obstacleAngle->addTerm(new Ramp("LEFT_BEHIND", radians(10), radians(80)));
-    m_obstacleAngle->addTerm(new Triangle("LEFT", radians(80), radians(10), 0));
-    m_obstacleAngle->addTerm(new Triangle("CENTER", radians(-10), 0, radians(10)));
-    m_obstacleAngle->addTerm(new Triangle("RIGHT", 0, radians(-10), radians(-80)));
-    m_obstacleAngle->addTerm(new Ramp("RIGHT_BEHIND", radians(-10), radians(-80)));
+    m_goalDistance->addTerm(new Ramp("LOW", 55, 20));
+    m_goalDistance->addTerm(new Ramp("HIGH", 20, 55));
+    m_obstacleDistance->addTerm(new Ramp("LOW", 150, 100));
+    m_obstacleDistance->addTerm(new Ramp("HIGH", 100, 150));
+    m_goalAngle->addTerm(new Ramp("RIGHT_BEHIND", radians(120), radians(160)));
+    m_goalAngle->addTerm(new Trapezoid("RIGHT", 0, radians(40),
+                                       radians(120), radians(160)));
+    m_goalAngle->addTerm(new Triangle("CENTER", radians(-40), 0, radians(40)));
+    m_goalAngle->addTerm(new Trapezoid("LEFT", radians(-160),
+                                       radians(-120), radians(-40), 0));
+    m_goalAngle->addTerm(new Ramp("LEFT_BEHIND", radians(-120), radians(-160)));
+    m_obstacleAngle->addTerm(new Ramp("RIGHT", radians(0), radians(20)));
+    m_obstacleAngle->addTerm(new Triangle("CENTER", radians(-20), 0, radians(20)));
+    m_obstacleAngle->addTerm(new Ramp("LEFT", radians(0), radians(-20)));
     m_engine->addInputVariable(m_obstacleAngle);
     m_engine->addInputVariable(m_obstacleDistance);
     m_engine->addInputVariable(m_goalAngle);
@@ -61,9 +61,7 @@ Controller::Controller(QObject *parent) : QObject(parent),
                                      "LeftSpeed is LOW and RightSpeed is LOW",
                                      m_engine));
     m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
-                                     "( ObstacleDistance is HIGH or "
-                                     "ObstacleAngle is LEFT_BEHIND or "
-                                     "ObstacleAngle is RIGHT_BEHIND ) and "
+                                     "ObstacleDistance is HIGH and "
                                      "GoalAngle is CENTER then "
                                      "LeftSpeed is HIGH and "
                                      "RightSpeed is HIGH", m_engine));
@@ -78,16 +76,12 @@ Controller::Controller(QObject *parent) : QObject(parent),
                                      "LeftSpeed is MEDIUM and "
                                      "RightSpeed is BACK", m_engine));
     m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
-                                     "( ObstacleDistance is HIGH or "
-                                     "ObstacleAngle is LEFT_BEHIND or "
-                                     "ObstacleAngle is RIGHT_BEHIND ) and "
+                                     "ObstacleDistance is HIGH and "
                                      "GoalAngle is LEFT then "
                                      "LeftSpeed is MEDIUM and "
                                      "RightSpeed is HIGH", m_engine));
     m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
-                                     "( ObstacleDistance is HIGH or "
-                                     "ObstacleAngle is LEFT_BEHIND or "
-                                     "ObstacleAngle is RIGHT_BEHIND ) and "
+                                     "ObstacleDistance is HIGH and "
                                      "GoalAngle is RIGHT then "
                                      "LeftSpeed is HIGH and "
                                      "RightSpeed is MEDIUM", m_engine));
@@ -245,6 +239,11 @@ void Controller::fuzzyController(const Robot2D &robot)
     m_obstacleAngle->setInputValue(obstacleAngle);
     m_engine->process();
 
+    qDebug() << "Obstacle Distance:" << QString::fromStdString(m_obstacleDistance->fuzzyInputValue());
+    qDebug() << "Goal Distance:" << QString::fromStdString(m_goalDistance->fuzzyInputValue());
+    qDebug() << "Obstacle Angle:" << QString::fromStdString(m_obstacleAngle->fuzzyInputValue()) << obstacleAngle;
+    qDebug() << "Goal Angle:" <<  QString::fromStdString(m_goalAngle->fuzzyInputValue()) << goalAngle;
+
     double leftSpeed = m_leftSpeed->getOutputValue();
     double rightSpeed = m_rightSpeed->getOutputValue();
 
@@ -256,38 +255,30 @@ void Controller::fuzzyController(const Robot2D &robot)
 
     data.cByte = _BV(G);
 
-    if((leftSpeed > 50) && (leftSpeed <= 75))
+    if((leftSpeed > 50) && (leftSpeed <= 80))
     {
         data.cByte |= _BV(VL0) | _BV(DL);
     }
-    else if((leftSpeed > 75) && (leftSpeed <= 85))
+    else if(leftSpeed > 80)
     {
         data.cByte |= _BV(VL1) | _BV(DL);
     }
-    else if(leftSpeed > 85)
-    {
-        data.cByte |= _BV(VL1) | _BV(VL0) | _BV(DL);
-    }
     else if(leftSpeed < -10)
     {
-        data.cByte |= _BV(VL1);
+        data.cByte |= _BV(VL0);
     }
 
     if((rightSpeed > 50) && (rightSpeed <= 75))
     {
         data.cByte |= _BV(VR0) | _BV(DR);
     }
-    else if((rightSpeed > 75) && (rightSpeed <= 85))
+    else if(rightSpeed > 80)
     {
         data.cByte |= _BV(VR1) | _BV(DR);
     }
-    else if(rightSpeed > 85)
-    {
-        data.cByte |= _BV(VR1) | _BV(VR0) | _BV(DR);
-    }
     else if(rightSpeed < -10)
     {
-        data.cByte |= _BV(VR1);
+        data.cByte |= _BV(VR0);
     }
 
     vec << data;

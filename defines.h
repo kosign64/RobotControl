@@ -7,17 +7,17 @@
 #define _BV(b) (1 << (b))
 
 #define G   6
-#define DL  5
-#define VL1 4
-#define VL0 3
-#define DR  2
-#define VR1 1
-#define VR0 0
+#define DR  5
+#define VR1 4
+#define VR0 3
+#define DL  2
+#define VL1 1
+#define VL0 0
 
 #define FORWARD_BYTE (_BV(G) | _BV(DL) | _BV(VL1) | _BV(DR) | _BV(VR1))
 #define STOP_BYTE (_BV(G))
-#define LEFT_BYTE (_BV(G) | _BV(VL0) | _BV(DL))
-#define RIGHT_BYTE (_BV(G) | _BV(DR) | _BV(VR0))
+#define LEFT_BYTE (_BV(G) | _BV(VR0) | _BV(DR))
+#define RIGHT_BYTE (_BV(G) | _BV(DL) | _BV(VL0))
 #define BACKWARD_BYTE (_BV(G) | _BV(VL1) | _BV(VR1))
 
 #define RATIO (4 / 3.f)

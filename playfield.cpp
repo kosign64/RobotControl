@@ -118,13 +118,16 @@ void PlayField::paintEvent(QPaintEvent *)
     }
 
     // Draw goal
-    painter.setBrush(QBrush(Qt::red));
-    Point2D goal{(uint16_t)(m_goal.x * m_scaleFactor + m_origin.x),
-                (uint16_t)(m_goal.y * m_scaleFactor + m_origin.y)};
-    painter.drawEllipse(goal.x - pointRadius / 2,
-                        goal.y - pointRadius / 2,
-                        pointRadius,
-                        pointRadius);
+    if(m_goal.x != 0 && m_goal.y != 0)
+    {
+        painter.setBrush(QBrush(Qt::red));
+        Point2D goal{(uint16_t)(m_goal.x * m_scaleFactor + m_origin.x),
+                    (uint16_t)(m_goal.y * m_scaleFactor + m_origin.y)};
+        painter.drawEllipse(goal.x - pointRadius / 2,
+                            goal.y - pointRadius / 2,
+                            pointRadius,
+                            pointRadius);
+    }
 }
 
 void PlayField::timerEvent(QTimerEvent *)
