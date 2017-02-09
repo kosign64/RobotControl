@@ -21,8 +21,8 @@ Controller::Controller(QObject *parent) : QObject(parent),
     m_obstacleAngle->setRange(-M_PI, M_PI);
     m_goalDistance->addTerm(new Ramp("LOW", 55, 20));
     m_goalDistance->addTerm(new Ramp("HIGH", 20, 55));
-    m_obstacleDistance->addTerm(new Ramp("LOW", 150, 100));
-    m_obstacleDistance->addTerm(new Ramp("HIGH", 100, 150));
+    m_obstacleDistance->addTerm(new Ramp("LOW", 170, 120));
+    m_obstacleDistance->addTerm(new Ramp("HIGH", 120, 170));
     m_goalAngle->addTerm(new Ramp("RIGHT_BEHIND", radians(120), radians(160)));
     m_goalAngle->addTerm(new Trapezoid("RIGHT", 0, radians(40),
                                        radians(120), radians(160)));
@@ -30,9 +30,9 @@ Controller::Controller(QObject *parent) : QObject(parent),
     m_goalAngle->addTerm(new Trapezoid("LEFT", radians(-160),
                                        radians(-120), radians(-40), 0));
     m_goalAngle->addTerm(new Ramp("LEFT_BEHIND", radians(-120), radians(-160)));
-    m_obstacleAngle->addTerm(new Ramp("RIGHT", radians(0), radians(20)));
-    m_obstacleAngle->addTerm(new Triangle("CENTER", radians(-20), 0, radians(20)));
-    m_obstacleAngle->addTerm(new Ramp("LEFT", radians(0), radians(-20)));
+    m_obstacleAngle->addTerm(new Ramp("RIGHT", radians(0), radians(5)));
+    m_obstacleAngle->addTerm(new Triangle("CENTER", radians(-5), 0, radians(5)));
+    m_obstacleAngle->addTerm(new Ramp("LEFT", radians(0), radians(-5)));
     m_engine->addInputVariable(m_obstacleAngle);
     m_engine->addInputVariable(m_obstacleDistance);
     m_engine->addInputVariable(m_goalAngle);
@@ -239,15 +239,45 @@ void Controller::fuzzyController(const Robot2D &robot)
     m_obstacleAngle->setInputValue(obstacleAngle);
     m_engine->process();
 
-    qDebug() << "Obstacle Distance:" << QString::fromStdString(m_obstacleDistance->fuzzyInputValue());
-    qDebug() << "Goal Distance:" << QString::fromStdString(m_goalDistance->fuzzyInputValue());
-    qDebug() << "Obstacle Angle:" << QString::fromStdString(m_obstacleAngle->fuzzyInputValue()) << obstacleAngle;
-    qDebug() << "Goal Angle:" <<  QString::fromStdString(m_goalAngle->fuzzyInputValue()) << goalAngle;
+    QString debug;
 
+    debug += "Obstacle Distance: " + QString::fromStdString(m_obstacleDistance->fuzzyInputValue()) + '\n';
+    debug += "Goal Distance: " + QString::fromStdString(m_goalDistance->fuzzyInputValue()) + '\n';
+    debug += "Obstacle Angle: " + QString::fromStdString(m_obstacleAngle->fuzzyInputValue()) + " " +
+            QString::number(obstacleAngle) + '\n';
+    debug += "Goal Angle: " + QString::fromStdString(m_goalAngle->fuzzyInputValue()) + " " +
+            QString::number(goalAngle) + '\n';
+    
     double leftSpeed = m_leftSpeed->getOutputValue();
     double rightSpeed = m_rightSpeed->getOutputValue();
 
-    qDebug() << degrees(goalAngle) << degrees(obstacleAngle) << leftSpeed << rightSpeed;
+    debug += "Left Speed: " + QString::fromStdString(m_leftSpeed->fuzzyOutputValue()) + " "
+            + QString::number(leftSpeed) + '\n';
+    debug += "Right Speed: " + QString::fromStdString(m_rightSpeed->fuzzyOutputValue()) + " " +
+            QString::number(rightSpeed) + '\n';
+
+    qDebug().noquote() << debug;
+
+    if(obstacleDistance < 130)
+    {
+        if(obstacleAngle > 0 && obstacleAngle < radians(50))
+        {
+            rightSpeed = 0;
+            leftSpeed = -30;
+        }
+        else if(obstacleAngle <= 0 && obstacleAngle > radians(-50))
+        {
+            rightSpeed = -30;
+            leftSpeed = 0;
+        }
+        else
+        {
+            rightSpeed = 70;
+            leftSpeed = 70;
+        }
+    }
+
+    //qDebug() << degrees(goalAngle) << degrees(obstacleAngle) << leftSpeed << rightSpeed;
 
     RobotData data;
     RobotDataVector vec;
@@ -255,11 +285,11 @@ void Controller::fuzzyController(const Robot2D &robot)
 
     data.cByte = _BV(G);
 
-    if((leftSpeed > 50) && (leftSpeed <= 80))
+    if((leftSpeed > 50) && (leftSpeed <= 75))
     {
         data.cByte |= _BV(VL0) | _BV(DL);
     }
-    else if(leftSpeed > 80)
+    else if(leftSpeed > 75)
     {
         data.cByte |= _BV(VL1) | _BV(DL);
     }
@@ -272,7 +302,7 @@ void Controller::fuzzyController(const Robot2D &robot)
     {
         data.cByte |= _BV(VR0) | _BV(DR);
     }
-    else if(rightSpeed > 80)
+    else if(rightSpeed > 75)
     {
         data.cByte |= _BV(VR1) | _BV(DR);
     }
