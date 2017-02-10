@@ -258,14 +258,20 @@ void Controller::fuzzyController(const Robot2D &robot)
 
     qDebug().noquote() << debug;
 
-    if(obstacleDistance < 130)
+    if(obstacleDistance < 120)
     {
-        if(obstacleAngle > 0 && obstacleAngle < radians(50))
+        qDebug() << "TOO CLOSE!!!";
+        if(goalDistance < 30)
+        {
+            rightSpeed = 0;
+            leftSpeed = 0;
+        }
+        else if(obstacleAngle > 0 && obstacleAngle < radians(35))
         {
             rightSpeed = 0;
             leftSpeed = -30;
         }
-        else if(obstacleAngle <= 0 && obstacleAngle > radians(-50))
+        else if(obstacleAngle <= 0 && obstacleAngle > radians(-35))
         {
             rightSpeed = -30;
             leftSpeed = 0;
