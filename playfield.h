@@ -10,7 +10,7 @@ class PlayField : public QWidget
 public:
     explicit PlayField(QWidget *parent = 0);
     ~PlayField();
-    QSize sizeHint() const {return QSize(320, 240);}
+    QSize sizeHint() const {return QSize(800, 600);}
 
 protected:
     void paintEvent(QPaintEvent *);
@@ -22,12 +22,14 @@ private:
     double m_scaleFactor;
     Point2D m_origin;
     Point2D m_goal;
+    int m_keyboardControlNumber;
 
 signals:
     void sendGoal(Point2D goal);
 
 public slots:
     void getRobots(RobotVector rob) {m_robots = rob;}
+    void getRobotNumber(int number) {m_keyboardControlNumber = number;}
 };
 
 #endif // PLAYFIELD_H

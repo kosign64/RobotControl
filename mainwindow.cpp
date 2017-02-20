@@ -50,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent)
             &Controller::getRobots);
     connect(controller, &Controller::sendRobotData,
             socket, &Socket::getRobotData);
+    connect(this, &MainWindow::sendRobotNumber, field,
+            &PlayField::getRobotNumber);
 
     mainLayout->addWidget(ipAddressEdit);
     mainLayout->addWidget(connectButton);
@@ -79,7 +81,6 @@ void MainWindow::onConnectClick()
 void MainWindow::keyPressEvent(QKeyEvent *ev)
 {
     RobotData data;
-    data.number = robotNumber;
     RobotDataVector vec;
     switch(ev->key())
     {
@@ -111,17 +112,30 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
         robotNumber = 2;
         break;
     }
-    if(upPressed)
+    if(upPressed && !leftPressed && !rightPressed)
     {
         data.cByte = FORWARD_BYTE;
+        qDebug() << "FORWARD";
+    }
+    else if(upPressed && leftPressed)
+    {
+        data.cByte = LEFTER_BYTE;
+        qDebug() << "LEFTER";
+    }
+    else if(upPressed && rightPressed)
+    {
+        data.cByte = RIGHTER_BYTE;
+        qDebug() << "RIGHTER";
     }
     else if(leftPressed)
     {
         data.cByte = LEFT_BYTE;
+        qDebug() << "LEFT";
     }
     else if(rightPressed)
     {
         data.cByte = RIGHT_BYTE;
+        qDebug() << "RIGHT";
     }
     else if(downPressed)
     {
@@ -131,9 +145,11 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
     {
         data.cByte = STOP_BYTE;
     }
+    data.number = robotNumber;
 
     vec.append(data);
 
+    emit sendRobotNumber(robotNumber);
     emit sendWheels(vec);
 }
 

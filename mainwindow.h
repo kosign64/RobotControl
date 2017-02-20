@@ -46,6 +46,7 @@ private:
 
 signals:
     void sendWheels(RobotDataVector vec);
+    void sendRobotNumber(int number);
 
 private slots:
     void onConnectClick();

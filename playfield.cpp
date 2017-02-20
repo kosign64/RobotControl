@@ -12,10 +12,11 @@
 #define RECT_HEIGHT ((553 - Y_OFFSET) - RECT_Y0)
 
 #define ROBOT_RADIUS 60
-#define POINT_RADIUS 10
+#define POINT_RADIUS 12
 
 PlayField::PlayField(QWidget *parent) : QWidget(parent),
-    m_goal{0, 0}
+    m_goal{0, 0},
+    m_keyboardControlNumber(1)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     startTimer(1000 / 40);
@@ -88,13 +89,24 @@ void PlayField::paintEvent(QPaintEvent *)
                             robotRadius,
                             robotRadius);
         // Draw robot direction
+//        painter.setBrush(QBrush(Qt::white));
+//        pen.setColor(Qt::white);
+//        pen.setWidthF(propHeight / 150);
+//        painter.setPen(pen);
+//        painter.drawLine(robot.center.x, robot.center.y,
+//                         robotRadius / 2 * cos(robot.angle) + robot.center.x,
+//                         robotRadius / 2 * sin(robot.angle) + robot.center.y);
+        painter.save();
+        painter.setBrush(QBrush(Qt::yellow));
+        painter.translate(robot.center.x, robot.center.y);
+        painter.rotate(robot.angle * 180. / M_PI - 90);
+        QPointF triangle[3] = {QPointF(0, robotRadius / 2), QPointF(-robotRadius / 2, 0),
+                              QPointF(robotRadius / 2, 0)};
+        painter.drawPolygon(triangle, 3);
+        painter.restore();
+
         painter.setBrush(QBrush(Qt::white));
         pen.setColor(Qt::white);
-        pen.setWidthF(propHeight / 150);
-        painter.setPen(pen);
-        painter.drawLine(robot.center.x, robot.center.y,
-                         robotRadius / 2 * cos(robot.angle) + robot.center.x,
-                         robotRadius / 2 * sin(robot.angle) + robot.center.y);
 
         // Draw robot points
         for(size_t i = 0; i < (sizeof(robot.points) / sizeof(robot.points[0])); ++i)
@@ -109,7 +121,14 @@ void PlayField::paintEvent(QPaintEvent *)
         }
 
         // Draw robot number
-        pen.setColor(Qt::red);
+        if(robot.number == m_keyboardControlNumber)
+        {
+            pen.setColor(Qt::green);
+        }
+        else
+        {
+            pen.setColor(Qt::red);
+        }
         painter.setPen(pen);
         painter.setFont(QFont("Serif", letterSize));
         painter.drawText(robot.center.x - robotRadius / 4,

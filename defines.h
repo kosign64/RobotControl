@@ -15,6 +15,8 @@
 #define VL0 0
 
 #define FORWARD_BYTE (_BV(G) | _BV(DL) | _BV(VL1) | _BV(DR) | _BV(VR1))
+#define RIGHTER_BYTE (_BV(G) | _BV(DL) | _BV(VL1) | _BV(DR) | _BV(VR0))
+#define LEFTER_BYTE (_BV(G) | _BV(DL) | _BV(VL0) | _BV(DR) | _BV(VR1))
 #define STOP_BYTE (_BV(G))
 #define LEFT_BYTE (_BV(G) | _BV(VR0) | _BV(DR))
 #define RIGHT_BYTE (_BV(G) | _BV(DL) | _BV(VL0))
