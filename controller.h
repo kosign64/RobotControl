@@ -19,6 +19,14 @@ enum ControllerType
     FUZZY
 };
 
+struct ControlData
+{
+    double goalAngle;
+    double obstacleAngle;
+    double goalDistance;
+    double obstacleDistance;
+};
+
 class Controller : public QObject
 {
     Q_OBJECT
@@ -49,6 +57,7 @@ private:
 
 signals:
     void sendRobotData(RobotDataVector data);
+    void sendControlData(ControlData data);
 
 public slots:
     void getGoal(Point2D goal) {m_goal = goal; controlAction();}

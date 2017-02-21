@@ -233,92 +233,100 @@ void Controller::fuzzyController(const Robot2D &robot)
     double goalDistance = RobotFinder::length(robot.center, m_goal);
     double obstacleDistance = RobotFinder::length(robot.center, obstacle.center);
 
-    m_goalDistance->setInputValue(goalDistance);
-    m_goalAngle->setInputValue(goalAngle);
-    m_obstacleDistance->setInputValue(obstacleDistance);
-    m_obstacleAngle->setInputValue(obstacleAngle);
-    m_engine->process();
+    ControlData data;
+    data.goalAngle = goalAngle;
+    data.goalDistance = goalDistance;
+    data.obstacleAngle = obstacleAngle;
+    data.obstacleDistance = obstacleDistance;
 
-    QString debug;
+    emit sendControlData(data);
 
-    debug += "Obstacle Distance: " + QString::fromStdString(m_obstacleDistance->fuzzyInputValue()) + '\n';
-    debug += "Goal Distance: " + QString::fromStdString(m_goalDistance->fuzzyInputValue()) + '\n';
-    debug += "Obstacle Angle: " + QString::fromStdString(m_obstacleAngle->fuzzyInputValue()) + " " +
-            QString::number(obstacleAngle) + '\n';
-    debug += "Goal Angle: " + QString::fromStdString(m_goalAngle->fuzzyInputValue()) + " " +
-            QString::number(goalAngle) + '\n';
+//    m_goalDistance->setInputValue(goalDistance);
+//    m_goalAngle->setInputValue(goalAngle);
+//    m_obstacleDistance->setInputValue(obstacleDistance);
+//    m_obstacleAngle->setInputValue(obstacleAngle);
+//    m_engine->process();
+
+//    QString debug;
+
+//    debug += "Obstacle Distance: " + QString::fromStdString(m_obstacleDistance->fuzzyInputValue()) + '\n';
+//    debug += "Goal Distance: " + QString::fromStdString(m_goalDistance->fuzzyInputValue()) + '\n';
+//    debug += "Obstacle Angle: " + QString::fromStdString(m_obstacleAngle->fuzzyInputValue()) + " " +
+//            QString::number(obstacleAngle) + '\n';
+//    debug += "Goal Angle: " + QString::fromStdString(m_goalAngle->fuzzyInputValue()) + " " +
+//            QString::number(goalAngle) + '\n';
     
-    double leftSpeed = m_leftSpeed->getOutputValue();
-    double rightSpeed = m_rightSpeed->getOutputValue();
+//    double leftSpeed = m_leftSpeed->getOutputValue();
+//    double rightSpeed = m_rightSpeed->getOutputValue();
 
-    debug += "Left Speed: " + QString::fromStdString(m_leftSpeed->fuzzyOutputValue()) + " "
-            + QString::number(leftSpeed) + '\n';
-    debug += "Right Speed: " + QString::fromStdString(m_rightSpeed->fuzzyOutputValue()) + " " +
-            QString::number(rightSpeed) + '\n';
+//    debug += "Left Speed: " + QString::fromStdString(m_leftSpeed->fuzzyOutputValue()) + " "
+//            + QString::number(leftSpeed) + '\n';
+//    debug += "Right Speed: " + QString::fromStdString(m_rightSpeed->fuzzyOutputValue()) + " " +
+//            QString::number(rightSpeed) + '\n';
 
-    qDebug().noquote() << debug;
+//    qDebug().noquote() << debug;
 
-    if(obstacleDistance < 120)
-    {
-        qDebug() << "TOO CLOSE!!!";
-        if(goalDistance < 30)
-        {
-            rightSpeed = 0;
-            leftSpeed = 0;
-        }
-        else if(obstacleAngle > 0 && obstacleAngle < radians(35))
-        {
-            rightSpeed = 0;
-            leftSpeed = -30;
-        }
-        else if(obstacleAngle <= 0 && obstacleAngle > radians(-35))
-        {
-            rightSpeed = -30;
-            leftSpeed = 0;
-        }
-        else
-        {
-            rightSpeed = 70;
-            leftSpeed = 70;
-        }
-    }
+//    if(obstacleDistance < 120)
+//    {
+//        qDebug() << "TOO CLOSE!!!";
+//        if(goalDistance < 30)
+//        {
+//            rightSpeed = 0;
+//            leftSpeed = 0;
+//        }
+//        else if(obstacleAngle > 0 && obstacleAngle < radians(35))
+//        {
+//            rightSpeed = 0;
+//            leftSpeed = -30;
+//        }
+//        else if(obstacleAngle <= 0 && obstacleAngle > radians(-35))
+//        {
+//            rightSpeed = -30;
+//            leftSpeed = 0;
+//        }
+//        else
+//        {
+//            rightSpeed = 70;
+//            leftSpeed = 70;
+//        }
+//    }
 
-    //qDebug() << degrees(goalAngle) << degrees(obstacleAngle) << leftSpeed << rightSpeed;
+//    //qDebug() << degrees(goalAngle) << degrees(obstacleAngle) << leftSpeed << rightSpeed;
 
-    RobotData data;
-    RobotDataVector vec;
-    data.number = m_robotToControl;
+//    RobotData data;
+//    RobotDataVector vec;
+//    data.number = m_robotToControl;
 
-    data.cByte = _BV(G);
+//    data.cByte = _BV(G);
 
-    if((leftSpeed > 50) && (leftSpeed <= 75))
-    {
-        data.cByte |= _BV(VL0) | _BV(DL);
-    }
-    else if(leftSpeed > 75)
-    {
-        data.cByte |= _BV(VL1) | _BV(DL);
-    }
-    else if(leftSpeed < -10)
-    {
-        data.cByte |= _BV(VL0);
-    }
+//    if((leftSpeed > 50) && (leftSpeed <= 75))
+//    {
+//        data.cByte |= _BV(VL0) | _BV(DL);
+//    }
+//    else if(leftSpeed > 75)
+//    {
+//        data.cByte |= _BV(VL1) | _BV(DL);
+//    }
+//    else if(leftSpeed < -10)
+//    {
+//        data.cByte |= _BV(VL0);
+//    }
 
-    if((rightSpeed > 50) && (rightSpeed <= 75))
-    {
-        data.cByte |= _BV(VR0) | _BV(DR);
-    }
-    else if(rightSpeed > 75)
-    {
-        data.cByte |= _BV(VR1) | _BV(DR);
-    }
-    else if(rightSpeed < -10)
-    {
-        data.cByte |= _BV(VR0);
-    }
+//    if((rightSpeed > 50) && (rightSpeed <= 75))
+//    {
+//        data.cByte |= _BV(VR0) | _BV(DR);
+//    }
+//    else if(rightSpeed > 75)
+//    {
+//        data.cByte |= _BV(VR1) | _BV(DR);
+//    }
+//    else if(rightSpeed < -10)
+//    {
+//        data.cByte |= _BV(VR0);
+//    }
 
-    vec << data;
-    emit sendRobotData(vec);
+//    vec << data;
+//    emit sendRobotData(vec);
 }
 
 double Controller::angleToPoint(const Robot2D &robot, const Point2D &point)

@@ -11,6 +11,17 @@
 #include <cmath>
 #include <unistd.h>
 
+enum Directions
+{
+    STOP = 0,
+    FORWARD = 1,
+    LEFTER = 2,
+    RIGHTER = 3,
+    LEFT = 4,
+    RIGHT = 5,
+    BACKWARD = 6
+};
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       upPressed(false),
@@ -18,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
       leftPressed(false),
       rightPressed(false),
       start(true),
+      saveData(false),
       robotNumber(1)
 {
     qRegisterMetaType<PointVector>("PointVector");
@@ -52,6 +64,8 @@ MainWindow::MainWindow(QWidget *parent)
             socket, &Socket::getRobotData);
     connect(this, &MainWindow::sendRobotNumber, field,
             &PlayField::getRobotNumber);
+    connect(controller, &Controller::sendControlData,
+            this, &MainWindow::getControlData);
 
     mainLayout->addWidget(ipAddressEdit);
     mainLayout->addWidget(connectButton);
@@ -59,11 +73,19 @@ MainWindow::MainWindow(QWidget *parent)
     mainWidget->setLayout(mainLayout);
     setCentralWidget(mainWidget);
     setFocus();
+
+    filename = "trainData.data";
+    file.setFileName(filename);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        exit(-1);
+    }
+    fileStream.setDevice(&file);
 }
 
 MainWindow::~MainWindow()
 {
-
+    file.close();
 }
 
 //=============================================================================
@@ -111,31 +133,35 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
     case Qt::Key_2:
         robotNumber = 2;
         break;
+
+    case Qt::Key_N:
+        saveData = !saveData;
+        break;
     }
     if(upPressed && !leftPressed && !rightPressed)
     {
         data.cByte = FORWARD_BYTE;
-        qDebug() << "FORWARD";
+//        qDebug() << "FORWARD";
     }
     else if(upPressed && leftPressed)
     {
         data.cByte = LEFTER_BYTE;
-        qDebug() << "LEFTER";
+//        qDebug() << "LEFTER";
     }
     else if(upPressed && rightPressed)
     {
         data.cByte = RIGHTER_BYTE;
-        qDebug() << "RIGHTER";
+//        qDebug() << "RIGHTER";
     }
     else if(leftPressed)
     {
         data.cByte = LEFT_BYTE;
-        qDebug() << "LEFT";
+//        qDebug() << "LEFT";
     }
     else if(rightPressed)
     {
         data.cByte = RIGHT_BYTE;
-        qDebug() << "RIGHT";
+//        qDebug() << "RIGHT";
     }
     else if(downPressed)
     {
@@ -176,9 +202,17 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
         downPressed = false;
         break;
     }
-    if(upPressed)
+    if(upPressed && !leftPressed && !rightPressed)
     {
         data.cByte = FORWARD_BYTE;
+    }
+    else if(upPressed && leftPressed)
+    {
+        data.cByte = LEFTER_BYTE;
+    }
+    else if(upPressed && rightPressed)
+    {
+        data.cByte = RIGHTER_BYTE;
     }
     else if(leftPressed)
     {
@@ -200,4 +234,46 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
     vec.append(data);
 
     emit sendWheels(vec);
+}
+
+void MainWindow::getControlData(ControlData data)
+{
+    if(saveData && ((upPressed || leftPressed || rightPressed || downPressed) ||
+                    data.goalDistance < 20))
+    {
+        qDebug() << "Save data";
+        fileStream << data.goalAngle << ";" << data.goalDistance <<
+                      ";" << data.obstacleAngle << ";" << data.obstacleDistance <<
+                      ";";
+        if(upPressed && !leftPressed && !rightPressed)
+        {
+            fileStream << FORWARD;
+        }
+        else if(upPressed && leftPressed)
+        {
+            fileStream << LEFTER;
+        }
+        else if(upPressed && rightPressed)
+        {
+            fileStream << RIGHTER;
+        }
+        else if(leftPressed)
+        {
+            fileStream << LEFT;
+        }
+        else if(rightPressed)
+        {
+            fileStream << RIGHT;
+        }
+        else if(downPressed)
+        {
+            fileStream << BACKWARD;
+        }
+        else
+        {
+            fileStream << STOP;
+        }
+
+        fileStream << endl;
+    }
 }

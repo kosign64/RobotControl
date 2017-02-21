@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include "defines.h"
+#include "controller.h"
+#include <QFile>
+#include <QTextStream>
 
 class QVBoxLayout;
 class QLineEdit;
@@ -41,8 +44,13 @@ private:
     bool rightPressed;
 
     bool start;
+    bool saveData;
 
     int robotNumber;
+
+    QString filename;
+    QFile file;
+    QTextStream fileStream;
 
 signals:
     void sendWheels(RobotDataVector vec);
@@ -50,6 +58,7 @@ signals:
 
 private slots:
     void onConnectClick();
+    void getControlData(ControlData data);
 
 public slots:
 

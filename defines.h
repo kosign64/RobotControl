@@ -31,15 +31,6 @@
 #define ACTUAL_WIDTH (574 * RATIO)
 #define X_SCALE (3746 / ACTUAL_WIDTH)
 
-enum Dir
-{
-    STOP,
-    LEFT,
-    RIGHT,
-    FORWARD,
-    BACKWARD
-};
-
 struct Point2D
 {
     uint16_t x;
