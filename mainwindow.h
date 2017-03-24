@@ -39,6 +39,7 @@ private:
     Controller *controller;
 
     bool upPressed;
+    bool upLightPressed;
     bool downPressed;
     bool leftPressed;
     bool rightPressed;

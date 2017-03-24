@@ -15,16 +15,18 @@ enum Directions
 {
     STOP = 0,
     FORWARD = 1,
-    LEFTER = 2,
-    RIGHTER = 3,
-    LEFT = 4,
-    RIGHT = 5,
-    BACKWARD = 6
+    FORWARD_LIGHT = 2,
+    LEFTER = 3,
+    RIGHTER = 4,
+    LEFT = 5,
+    RIGHT = 6,
+    BACKWARD = 7
 };
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       upPressed(false),
+      upLightPressed(false),
       downPressed(false),
       leftPressed(false),
       rightPressed(false),
@@ -110,6 +112,10 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
         upPressed = true;
         break;
 
+    case Qt::Key_E:
+        upLightPressed = true;
+        break;
+
     case Qt::Key_A:
         leftPressed = true;
         break;
@@ -141,27 +147,26 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
     if(upPressed && !leftPressed && !rightPressed)
     {
         data.cByte = FORWARD_BYTE;
-//        qDebug() << "FORWARD";
+    }
+    else if(upLightPressed)
+    {
+        data.cByte = FORWARD_LIGHT_BYTE;
     }
     else if(upPressed && leftPressed)
     {
         data.cByte = LEFTER_BYTE;
-//        qDebug() << "LEFTER";
     }
     else if(upPressed && rightPressed)
     {
         data.cByte = RIGHTER_BYTE;
-//        qDebug() << "RIGHTER";
     }
     else if(leftPressed)
     {
         data.cByte = LEFT_BYTE;
-//        qDebug() << "LEFT";
     }
     else if(rightPressed)
     {
         data.cByte = RIGHT_BYTE;
-//        qDebug() << "RIGHT";
     }
     else if(downPressed)
     {
@@ -190,6 +195,10 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
         upPressed = false;
         break;
 
+    case Qt::Key_E:
+        upLightPressed = false;
+        break;
+
     case Qt::Key_A:
         leftPressed = false;
         break;
@@ -205,6 +214,10 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
     if(upPressed && !leftPressed && !rightPressed)
     {
         data.cByte = FORWARD_BYTE;
+    }
+    else if(upLightPressed)
+    {
+        data.cByte = FORWARD_LIGHT_BYTE;
     }
     else if(upPressed && leftPressed)
     {
@@ -238,42 +251,56 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
 
 void MainWindow::getControlData(ControlData data)
 {
+    static QString prevString;
+    QString saveString;
+    QTextStream stringStream(&saveString);
     if(saveData && ((upPressed || leftPressed || rightPressed || downPressed) ||
                     data.goalDistance < 20))
     {
-        qDebug() << "Save data";
-        fileStream << data.goalAngle << ";" << data.goalDistance <<
+        stringStream << data.goalAngle << ";" << data.goalDistance <<
                       ";" << data.obstacleAngle << ";" << data.obstacleDistance <<
                       ";";
         if(upPressed && !leftPressed && !rightPressed)
         {
-            fileStream << FORWARD;
+            stringStream << FORWARD;
+        }
+        else if(upLightPressed)
+        {
+            stringStream << FORWARD_LIGHT;
         }
         else if(upPressed && leftPressed)
         {
-            fileStream << LEFTER;
+            stringStream << LEFTER;
         }
         else if(upPressed && rightPressed)
         {
-            fileStream << RIGHTER;
+            stringStream << RIGHTER;
         }
         else if(leftPressed)
         {
-            fileStream << LEFT;
+            stringStream << LEFT;
         }
         else if(rightPressed)
         {
-            fileStream << RIGHT;
+            stringStream << RIGHT;
         }
         else if(downPressed)
         {
-            fileStream << BACKWARD;
+            stringStream << BACKWARD;
         }
         else
         {
-            fileStream << STOP;
+            stringStream << STOP;
         }
 
-        fileStream << endl;
+        stringStream << endl;
+
+        if(QString::compare(saveString, prevString) != 0)
+        {
+            qDebug() << saveString << prevString << "Save data";
+            fileStream << saveString;
+        }
+
+        prevString = saveString;
     }
 }

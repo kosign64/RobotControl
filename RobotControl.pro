@@ -19,13 +19,17 @@ SOURCES += main.cpp\
     socket.cpp \
     playfield.cpp \
     robotfinder.cpp \
-    controller.cpp
+    controller.cpp \
+    neuralnet.cpp \
+    neuron.cpp
 
 HEADERS  += mainwindow.h \
     socket.h \
     playfield.h \
     defines.h \
     robotfinder.h \
-    controller.h
+    controller.h \
+    neuralnet.h \
+    neuron.h
 
 LIBS += "/usr/local/lib/libfuzzylite-static.a"

@@ -7,6 +7,8 @@
 
 using namespace fl;
 
+class NeuralNet;
+
 /*
  * Angle > 0 - to the right
  * Angle < 0 - to the left
@@ -16,7 +18,8 @@ using namespace fl;
 enum ControllerType
 {
     DUMB,
-    FUZZY
+    FUZZY,
+    NEURAL_NET
 };
 
 struct ControlData
@@ -32,6 +35,7 @@ class Controller : public QObject
     Q_OBJECT
 public:
     explicit Controller(QObject *parent = 0);
+    ~Controller();
     static double angleToPoint(const Robot2D &robot, const Point2D &point);
 
 private:
@@ -49,9 +53,13 @@ private:
     OutputVariable *m_rightSpeed;
     RuleBlock *m_ruleBlock;
 
+    // Neural net Controller
+    NeuralNet *m_net;
+
     void controlAction();
     void dumbController(const Robot2D &robot);
     void fuzzyController(const Robot2D &robot);
+    void neuralNetController(const Robot2D &robot);
     static double radians(double degrees) {return degrees * M_PI / 180.;}
     static double degrees(double radians) {return radians * 180. / M_PI;}
 

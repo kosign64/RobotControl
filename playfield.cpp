@@ -107,6 +107,7 @@ void PlayField::paintEvent(QPaintEvent *)
 
         painter.setBrush(QBrush(Qt::white));
         pen.setColor(Qt::white);
+        painter.setPen(pen);
 
         // Draw robot points
         for(size_t i = 0; i < (sizeof(robot.points) / sizeof(robot.points[0])); ++i)
@@ -136,6 +137,7 @@ void PlayField::paintEvent(QPaintEvent *)
                          QString::number(robot.number));
     }
 
+    painter.setPen(Qt::NoPen);
     // Draw goal
     if(m_goal.x != 0 && m_goal.y != 0)
     {

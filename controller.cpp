@@ -1,10 +1,32 @@
 #include "controller.h"
 #include "robotfinder.h"
+#include <neuralnet.h>
 #include <QDebug>
+
+#define GOAL_ANGLE        0
+#define GOAL_DISTANCE     1
+#define OBSTACLE_ANGLE    2
+#define OBSTACLE_DISTANCE 3
+#define OUTPUT            4
+
+enum Directions
+{
+    STOP          = 0,
+    FORWARD       = 1,
+    FORWARD_LIGHT = 2,
+    LEFTER        = 3,
+    RIGHTER       = 4,
+    LEFT          = 5,
+    RIGHT         = 6,
+    BACKWARD      = 7
+};
+
+typedef vector<double> DoubleVector;
 
 Controller::Controller(QObject *parent) : QObject(parent),
     m_goal{0, 0},
-    m_robotToControl(1)
+    m_robotToControl(1),
+    m_net(nullptr)
 {
     m_engine = new Engine("Fuzzy");
     m_goalDistance = new InputVariable("GoalDistance");
@@ -155,6 +177,17 @@ Controller::Controller(QObject *parent) : QObject(parent),
     {
         qDebug() << "Engine is Ready...";
     }
+
+    m_net = new NeuralNet;
+    m_net->loadNet("../RobotControl/signX6.net");
+}
+
+Controller::~Controller()
+{
+    if(m_net)
+    {
+        delete m_net;
+    }
 }
 
 void Controller::controlAction()
@@ -164,6 +197,7 @@ void Controller::controlAction()
 
     //dumbController(robot);
     fuzzyController(robot);
+    //neuralNetController(robot);
 }
 
 void Controller::dumbController(const Robot2D &robot)
@@ -240,6 +274,8 @@ void Controller::fuzzyController(const Robot2D &robot)
     data.obstacleDistance = obstacleDistance;
 
     emit sendControlData(data);
+
+
 
 //    m_goalDistance->setInputValue(goalDistance);
 //    m_goalAngle->setInputValue(goalAngle);
@@ -327,6 +363,100 @@ void Controller::fuzzyController(const Robot2D &robot)
 
 //    vec << data;
 //    emit sendRobotData(vec);
+}
+
+void Controller::neuralNetController(const Robot2D &robot)
+{
+    Robot2D &obstacle = RobotFinder::getRobotByNumber(m_robots, 2 - (m_robotToControl - 1));
+    double goalAngle = angleToPoint(robot, m_goal);
+    double obstacleAngle = angleToPoint(robot, obstacle.center);
+    double goalDistance = RobotFinder::length(robot.center, m_goal);
+    double obstacleDistance = RobotFinder::length(robot.center, obstacle.center);
+
+    DoubleVector input;
+    DoubleVector output;
+    input.resize(4);
+    output.resize(8);
+
+    input[GOAL_ANGLE] = goalAngle / M_PI;
+    input[GOAL_DISTANCE] = goalDistance / 600.;
+    input[OBSTACLE_ANGLE] = obstacleAngle / M_PI;
+    input[OBSTACLE_DISTANCE] = obstacleDistance / 600.;
+
+//    input[GOAL_ANGLE] = -0.705985;
+//    input[GOAL_DISTANCE] = 0.140099;
+//    input[OBSTACLE_ANGLE] = -0.751981;
+//    input[OBSTACLE_DISTANCE] = 0.620716;
+
+    qDebug() << input[GOAL_ANGLE] << input[GOAL_DISTANCE] << input[OBSTACLE_ANGLE] <<
+                input[OBSTACLE_DISTANCE];
+
+    RobotData data;
+    RobotDataVector vec;
+    data.number = m_robotToControl;
+
+    if(goalDistance < 25)
+    {
+        data.cByte = STOP_BYTE;
+    }
+    else
+    {
+        m_net->feedForward(input);
+        m_net->getResults(output);
+
+        qDebug() << output[0] << output[1] << output[2] << output[3] << output[4]
+                << output[5] << output[6] << output[7];
+
+        vector<double>::iterator largest = max_element(output.begin(),
+                                                       output.end());
+        int j = distance(output.begin(), largest);
+        switch (j) {
+        case STOP:
+            qDebug() << "STOP";
+            data.cByte = STOP_BYTE;
+            break;
+
+        case FORWARD:
+            qDebug() << "FORWARD";
+            data.cByte = FORWARD_BYTE;
+            break;
+
+        case FORWARD_LIGHT:
+            qDebug() << "FORWARD_LIGHT";
+            data.cByte = FORWARD_LIGHT_BYTE;
+            break;
+
+        case LEFT:
+            qDebug() << "LEFT";
+            data.cByte = LEFT_BYTE;
+            break;
+
+        case RIGHT:
+            qDebug() << "RIGHT";
+            data.cByte = RIGHT_BYTE;
+            break;
+
+        case LEFTER:
+            qDebug() << "LEFTER";
+            data.cByte = LEFTER_BYTE;
+            break;
+
+        case RIGHTER:
+            qDebug() << "RIGHTER";
+            data.cByte = RIGHTER_BYTE;
+            break;
+
+        case BACKWARD:
+            qDebug() << "BACKWARD";
+            data.cByte = BACKWARD_BYTE;
+            break;
+        default:
+            break;
+        }
+    }
+
+    vec << data;
+    emit sendRobotData(vec);
 }
 
 double Controller::angleToPoint(const Robot2D &robot, const Point2D &point)
