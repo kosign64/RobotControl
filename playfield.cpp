@@ -16,7 +16,8 @@
 
 PlayField::PlayField(QWidget *parent) : QWidget(parent),
     m_goal{0, 0},
-    m_keyboardControlNumber(1)
+    m_keyboardControlNumber(1),
+    m_drawPath(false)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     startTimer(1000 / 40);
@@ -38,6 +39,10 @@ void PlayField::paintEvent(QPaintEvent *)
     int boardHeight;
     int letterSize;
 
+    if(!m_drawPath)
+    {
+        path.clear();
+    }
 
     if((this->width() / RATIO) > this->height())
     {
@@ -78,6 +83,28 @@ void PlayField::paintEvent(QPaintEvent *)
     // Draw robots
     foreach(Robot2D robot, m_robots)
     {
+        if(robot.number == 1 && m_drawPath)
+        {
+            path.push_back(robot.center);
+        }
+
+        if(m_drawPath)
+        {
+            painter.save();
+            painter.setPen(Qt::NoPen);
+            for(int i = 0; i < path.size(); ++i)
+            {
+                Point2D point = path[i];
+                point.x = point.x * m_scaleFactor + m_origin.x;
+                point.y = point.y * m_scaleFactor + m_origin.y;
+                painter.drawEllipse(point.x - pointRadius / 2,
+                                    point.y - pointRadius / 2,
+                                    pointRadius,
+                                    pointRadius);
+            }
+            painter.restore();
+        }
+
         robot.center.x = robot.center.x * m_scaleFactor + m_origin.x;
         robot.center.y = robot.center.y * m_scaleFactor + m_origin.y;
 

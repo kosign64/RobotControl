@@ -11,6 +11,7 @@ public:
     explicit PlayField(QWidget *parent = 0);
     ~PlayField();
     QSize sizeHint() const {return QSize(800, 600);}
+    void invertDrawPath() {m_drawPath = !m_drawPath;}
 
 protected:
     void paintEvent(QPaintEvent *);
@@ -23,6 +24,8 @@ private:
     Point2D m_origin;
     Point2D m_goal;
     int m_keyboardControlNumber;
+    bool m_drawPath;
+    PointVector path;
 
 signals:
     void sendGoal(Point2D goal);

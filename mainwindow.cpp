@@ -140,8 +140,16 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
         robotNumber = 2;
         break;
 
+    case Qt::Key_3:
+        robotNumber = 3;
+        break;
+
     case Qt::Key_N:
         saveData = !saveData;
+        break;
+
+    case Qt::Key_P:
+        field->invertDrawPath();
         break;
     }
     if(upPressed && !leftPressed && !rightPressed)
