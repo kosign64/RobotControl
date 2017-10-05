@@ -74,7 +74,7 @@ bool Socket::connectToHost(const QString &address)
     if(!m_connected)
     {
         m_socket->connectToHost(address, 3336);
-        if(m_socket->waitForConnected(2000))
+        if(m_socket->waitForConnected(15000))
         {
             m_connected = true;
             RobotData data;
