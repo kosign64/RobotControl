@@ -15,9 +15,9 @@
 #define POINT_RADIUS 12
 
 PlayField::PlayField(QWidget *parent) : QWidget(parent),
-    m_goal{0, 0},
-    m_keyboardControlNumber(1),
-    m_drawPath(false)
+    goal_{0, 0},
+    keyboardControlNumber_(1),
+    drawPath_(false)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     startTimer(1000 / 40);
@@ -39,33 +39,33 @@ void PlayField::paintEvent(QPaintEvent *)
     int boardHeight;
     int letterSize;
 
-    if(!m_drawPath)
+    if(!drawPath_)
     {
-        path.clear();
+        path_.clear();
     }
 
     if((this->width() / RATIO) > this->height())
     {
         propWidth = this->height() * RATIO;
         propHeight = this->height();
-        m_scaleFactor = this->height() / ACTUAL_HEIGHT;
-        m_origin.x = this->width() / 2 - propWidth / 2;
-        m_origin.y = 0;
+        scaleFactor_ = this->height() / ACTUAL_HEIGHT;
+        origin_.x = this->width() / 2 - propWidth / 2;
+        origin_.y = 0;
     }
     else
     {
         propWidth = this->width();
         propHeight = this->width() / RATIO;
-        m_scaleFactor = this->width() / ACTUAL_WIDTH;
-        m_origin.x = 0;
-        m_origin.y = this->height() / 2 - propHeight / 2;
+        scaleFactor_ = this->width() / ACTUAL_WIDTH;
+        origin_.x = 0;
+        origin_.y = this->height() / 2 - propHeight / 2;
     }
-    boardOrigin.x = (RECT_X0 / X_SCALE) * m_scaleFactor + m_origin.x;
-    boardOrigin.y = RECT_Y0 * m_scaleFactor + m_origin.y;
-    boardWidth = RECT_WIDTH * m_scaleFactor / X_SCALE;
-    boardHeight = RECT_HEIGHT * m_scaleFactor;
-    robotRadius = ROBOT_RADIUS * m_scaleFactor;
-    pointRadius = POINT_RADIUS * m_scaleFactor;
+    boardOrigin.x = (RECT_X0 / X_SCALE) * scaleFactor_ + origin_.x;
+    boardOrigin.y = RECT_Y0 * scaleFactor_ + origin_.y;
+    boardWidth = RECT_WIDTH * scaleFactor_ / X_SCALE;
+    boardHeight = RECT_HEIGHT * scaleFactor_;
+    robotRadius = ROBOT_RADIUS * scaleFactor_;
+    pointRadius = POINT_RADIUS * scaleFactor_;
     letterSize = propHeight / 15;
 
     // Draw board
@@ -73,7 +73,7 @@ void PlayField::paintEvent(QPaintEvent *)
     QPen pen;
     painter.setBrush(QBrush(Qt::red));
     painter.setPen(Qt::NoPen);
-    painter.drawRect(m_origin.x, m_origin.y,
+    painter.drawRect(origin_.x, origin_.y,
                      propWidth, propHeight);
     painter.setBrush(QBrush(Qt::black));
     painter.drawRect(boardOrigin.x,
@@ -81,22 +81,22 @@ void PlayField::paintEvent(QPaintEvent *)
                      boardWidth,
                      boardHeight);
     // Draw robots
-    foreach(Robot2D robot, m_robots)
+    foreach(Robot2D robot, robots_)
     {
-        if(robot.number == 1 && m_drawPath)
+        if(robot.number == 1 && drawPath_)
         {
-            path.push_back(robot.center);
+            path_.push_back(robot.center);
         }
 
-        if(m_drawPath)
+        if(drawPath_)
         {
             painter.save();
             painter.setPen(Qt::NoPen);
-            for(int i = 0; i < path.size(); ++i)
+            for(int i = 0; i < path_.size(); ++i)
             {
-                Point2D point = path[i];
-                point.x = point.x * m_scaleFactor + m_origin.x;
-                point.y = point.y * m_scaleFactor + m_origin.y;
+                Point2D point = path_[i];
+                point.x = point.x * scaleFactor_ + origin_.x;
+                point.y = point.y * scaleFactor_ + origin_.y;
                 painter.drawEllipse(point.x - pointRadius / 2,
                                     point.y - pointRadius / 2,
                                     pointRadius,
@@ -105,8 +105,8 @@ void PlayField::paintEvent(QPaintEvent *)
             painter.restore();
         }
 
-        robot.center.x = robot.center.x * m_scaleFactor + m_origin.x;
-        robot.center.y = robot.center.y * m_scaleFactor + m_origin.y;
+        robot.center.x = robot.center.x * scaleFactor_ + origin_.x;
+        robot.center.y = robot.center.y * scaleFactor_ + origin_.y;
 
         // Draw robot circle
         painter.setBrush(QBrush(Qt::blue));
@@ -140,8 +140,8 @@ void PlayField::paintEvent(QPaintEvent *)
         for(size_t i = 0; i < (sizeof(robot.points) / sizeof(robot.points[0])); ++i)
         {
             Point2D point = robot.points[i];
-            point.x = point.x * m_scaleFactor + m_origin.x;
-            point.y = point.y * m_scaleFactor + m_origin.y;
+            point.x = point.x * scaleFactor_ + origin_.x;
+            point.y = point.y * scaleFactor_ + origin_.y;
             painter.drawEllipse(point.x - pointRadius / 2,
                                 point.y - pointRadius / 2,
                                 pointRadius,
@@ -149,7 +149,7 @@ void PlayField::paintEvent(QPaintEvent *)
         }
 
         // Draw robot number
-        if(robot.number == m_keyboardControlNumber)
+        if(robot.number == keyboardControlNumber_)
         {
             pen.setColor(Qt::green);
         }
@@ -166,11 +166,11 @@ void PlayField::paintEvent(QPaintEvent *)
 
     painter.setPen(Qt::NoPen);
     // Draw goal
-    if(m_goal.x != 0 && m_goal.y != 0)
+    if(goal_.x != 0 && goal_.y != 0)
     {
         painter.setBrush(QBrush(Qt::red));
-        Point2D goal{(uint16_t)(m_goal.x * m_scaleFactor + m_origin.x),
-                    (uint16_t)(m_goal.y * m_scaleFactor + m_origin.y)};
+        Point2D goal{(uint16_t)(goal_.x * scaleFactor_ + origin_.x),
+                    (uint16_t)(goal_.y * scaleFactor_ + origin_.y)};
         painter.drawEllipse(goal.x - pointRadius / 2,
                             goal.y - pointRadius / 2,
                             pointRadius,
@@ -187,8 +187,8 @@ void PlayField::mousePressEvent(QMouseEvent *ev)
 {
     if(ev->button() == Qt::LeftButton)
     {
-        m_goal.x = (ev->x() - m_origin.x) / m_scaleFactor;
-        m_goal.y = (ev->y() - m_origin.y) / m_scaleFactor;
-        emit sendGoal(m_goal);
+        goal_.x = (ev->x() - origin_.x) / scaleFactor_;
+        goal_.y = (ev->y() - origin_.y) / scaleFactor_;
+        emit sendGoal(goal_);
     }
 }

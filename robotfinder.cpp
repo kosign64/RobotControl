@@ -5,8 +5,8 @@
 #include <iostream>
 
 RobotFinder::RobotFinder(QObject *parent) : QObject(parent),
-    m_start(true),
-    m_state(RUN_ROBOT)
+    start_(true),
+    state_(RUN_ROBOT)
 {
 
 }
@@ -25,12 +25,12 @@ void RobotFinder::getPoints(PointVector &pointVector)
     {
         RobotData data;
         RobotDataVector vec;
-        switch (m_state)
+        switch (state_)
         {
         case RUN_ROBOT:
-            if(m_start)
+            if(start_)
             {
-                m_robotsStart = robots;
+                robotsStart_ = robots;
             }
             static int stopIteration = 0;
             data.number = checkingRobotNumber;
@@ -40,7 +40,7 @@ void RobotFinder::getPoints(PointVector &pointVector)
             if(++stopIteration > stopTime)
             {
                 stopIteration = 0;
-                m_state = WAIT;
+                state_ = WAIT;
             }
             break;
 
@@ -53,15 +53,15 @@ void RobotFinder::getPoints(PointVector &pointVector)
             if(++waitIteration > waitTime)
             {
                 waitIteration = 0;
-                m_state = CHECK_ROBOT;
+                state_ = CHECK_ROBOT;
             }
             break;
 
         case CHECK_ROBOT:
             int movedStart, movedCurrent;
-            findMovedRobot(m_robotsStart, robots,
+            findMovedRobot(robotsStart_, robots,
                            movedStart, movedCurrent);
-            Robot2D &startRob = m_robotsStart[movedStart];
+            Robot2D &startRob = robotsStart_[movedStart];
             Robot2D &currentRob = robots[movedCurrent];
             // Robot, that already has checkingRobotNumber
             Robot2D &otherRob = getRobotByNumber(robots,
@@ -84,9 +84,9 @@ void RobotFinder::getPoints(PointVector &pointVector)
             {
                 currentRob.angle = startRob.angle + M_PI;
             }
-            m_robotsStart = robots;
+            robotsStart_ = robots;
             checkingRobotNumber++;
-            m_state = RUN_ROBOT;
+            state_ = RUN_ROBOT;
             break;
         }
     }
@@ -94,8 +94,8 @@ void RobotFinder::getPoints(PointVector &pointVector)
     {
         emit sendRobots(robots);
     }
-    m_robotsPrev = robots;
-    m_start = false;
+    robotsPrev_ = robots;
+    start_ = false;
 }
 
 bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector) const
@@ -154,7 +154,7 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                                      robot.points[0].x - robot.points[1].x);
                 robot.center = center(robot.points[0], robot.points[1]);
                 robot.angle = angle + M_PI / 2.;
-                if(m_start)
+                if(start_)
                 {
                     robotNum++;
                     robot.number = robotNum;
@@ -163,27 +163,27 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                 {
                     double minDist = 10000;
                     int nearest;
-                    for(int k = 0; k < m_robotsPrev.size(); ++k)
+                    for(int k = 0; k < robotsPrev_.size(); ++k)
                     {
                         double dist = length(robot.center,
-                                             m_robotsPrev[k].center);
+                                             robotsPrev_[k].center);
                         if(dist < minDist)
                         {
                             minDist = dist;
                             nearest = k;
                         }
                     }
-                    robot.number = m_robotsPrev[nearest].number;
+                    robot.number = robotsPrev_[nearest].number;
 
                     //Angle
                     bool needFix = true;
                     double angle;
 
-                    if((m_robotsPrev[nearest].angle > (3.75 * M_PI / 2.) ||
-                        (m_robotsPrev[nearest].angle < M_PI / 4.)) &&
-                            (fabs(m_robotsPrev[nearest].angle - robot.angle) > (0.3 * M_PI)))
+                    if((robotsPrev_[nearest].angle > (3.75 * M_PI / 2.) ||
+                        (robotsPrev_[nearest].angle < M_PI / 4.)) &&
+                            (fabs(robotsPrev_[nearest].angle - robot.angle) > (0.3 * M_PI)))
                     {
-                        if(m_robotsPrev[nearest].angle > (3.75 * M_PI / 2.))
+                        if(robotsPrev_[nearest].angle > (3.75 * M_PI / 2.))
                         {
                             if(robot.angle < (M_PI / 4.))
                             {
@@ -202,8 +202,8 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                     }
                     if(needFix)
                     {
-                        if(fabs(robot.angle - m_robotsPrev[nearest].angle) <
-                                fabs((robot.angle + M_PI * 0.9) - m_robotsPrev[nearest].angle))
+                        if(fabs(robot.angle - robotsPrev_[nearest].angle) <
+                                fabs((robot.angle + M_PI * 0.9) - robotsPrev_[nearest].angle))
                         {
                             angle = robot.angle;
                         }
@@ -218,9 +218,9 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
             }
         }
     }
-    if(!m_start)
+    if(!start_)
     {
-        if(robotVector.size() != m_robotsStart.size())
+        if(robotVector.size() != robotsStart_.size())
         {
             return false;
         }

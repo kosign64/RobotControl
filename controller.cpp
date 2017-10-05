@@ -24,151 +24,151 @@ enum Directions
 typedef vector<double> DoubleVector;
 
 Controller::Controller(QObject *parent) : QObject(parent),
-    m_goal{0, 0},
-    m_robotToControl(1),
-    m_net(nullptr)
+    goal_{0, 0},
+    robotToControl_(1),
+    net_(nullptr)
 {
-    m_engine = new Engine("Fuzzy");
-    m_goalDistance = new InputVariable("GoalDistance");
-    m_goalAngle = new InputVariable("GoalAngle");
-    m_obstacleDistance = new InputVariable("ObstacleDistance");
-    m_obstacleAngle = new InputVariable("ObstacleAngle");
-    m_goalDistance->setEnabled(true);
-    m_goalAngle->setEnabled(true);
-    m_obstacleDistance->setEnabled(true);
-    m_obstacleAngle->setEnabled(true);
-    m_goalDistance->setRange(0, 800);
-    m_obstacleDistance->setRange(0, 800);
-    m_goalAngle->setRange(-M_PI, M_PI);
-    m_obstacleAngle->setRange(-M_PI, M_PI);
-    m_goalDistance->addTerm(new Ramp("LOW", 55, 20));
-    m_goalDistance->addTerm(new Ramp("HIGH", 20, 55));
-    m_obstacleDistance->addTerm(new Ramp("LOW", 170, 120));
-    m_obstacleDistance->addTerm(new Ramp("HIGH", 120, 170));
-    m_goalAngle->addTerm(new Ramp("RIGHT_BEHIND", radians(120), radians(160)));
-    m_goalAngle->addTerm(new Trapezoid("RIGHT", 0, radians(40),
+    engine_ = new Engine("Fuzzy");
+    goalDistance_ = new InputVariable("GoalDistance");
+    goalAngle_ = new InputVariable("GoalAngle");
+    obstacleDistance_ = new InputVariable("ObstacleDistance");
+    obstacleAngle_ = new InputVariable("ObstacleAngle");
+    goalDistance_->setEnabled(true);
+    goalAngle_->setEnabled(true);
+    obstacleDistance_->setEnabled(true);
+    obstacleAngle_->setEnabled(true);
+    goalDistance_->setRange(0, 800);
+    obstacleDistance_->setRange(0, 800);
+    goalAngle_->setRange(-M_PI, M_PI);
+    obstacleAngle_->setRange(-M_PI, M_PI);
+    goalDistance_->addTerm(new Ramp("LOW", 55, 20));
+    goalDistance_->addTerm(new Ramp("HIGH", 20, 55));
+    obstacleDistance_->addTerm(new Ramp("LOW", 170, 120));
+    obstacleDistance_->addTerm(new Ramp("HIGH", 120, 170));
+    goalAngle_->addTerm(new Ramp("RIGHT_BEHIND", radians(120), radians(160)));
+    goalAngle_->addTerm(new Trapezoid("RIGHT", 0, radians(40),
                                        radians(120), radians(160)));
-    m_goalAngle->addTerm(new Triangle("CENTER", radians(-40), 0, radians(40)));
-    m_goalAngle->addTerm(new Trapezoid("LEFT", radians(-160),
+    goalAngle_->addTerm(new Triangle("CENTER", radians(-40), 0, radians(40)));
+    goalAngle_->addTerm(new Trapezoid("LEFT", radians(-160),
                                        radians(-120), radians(-40), 0));
-    m_goalAngle->addTerm(new Ramp("LEFT_BEHIND", radians(-120), radians(-160)));
-    m_obstacleAngle->addTerm(new Ramp("RIGHT", radians(0), radians(5)));
-    m_obstacleAngle->addTerm(new Triangle("CENTER", radians(-5), 0, radians(5)));
-    m_obstacleAngle->addTerm(new Ramp("LEFT", radians(0), radians(-5)));
-    m_engine->addInputVariable(m_obstacleAngle);
-    m_engine->addInputVariable(m_obstacleDistance);
-    m_engine->addInputVariable(m_goalAngle);
-    m_engine->addInputVariable(m_goalDistance);
+    goalAngle_->addTerm(new Ramp("LEFT_BEHIND", radians(-120), radians(-160)));
+    obstacleAngle_->addTerm(new Ramp("RIGHT", radians(0), radians(5)));
+    obstacleAngle_->addTerm(new Triangle("CENTER", radians(-5), 0, radians(5)));
+    obstacleAngle_->addTerm(new Ramp("LEFT", radians(0), radians(-5)));
+    engine_->addInputVariable(obstacleAngle_);
+    engine_->addInputVariable(obstacleDistance_);
+    engine_->addInputVariable(goalAngle_);
+    engine_->addInputVariable(goalDistance_);
 
-    m_leftSpeed = new OutputVariable("LeftSpeed");
-    m_rightSpeed = new OutputVariable("RightSpeed");
-    m_leftSpeed->setEnabled(true);
-    m_rightSpeed->setEnabled(true);
-    m_leftSpeed->setRange(-50, 100);
-    m_rightSpeed->setRange(-50, 100);
+    leftSpeed_ = new OutputVariable("LeftSpeed");
+    rightSpeed_ = new OutputVariable("RightSpeed");
+    leftSpeed_->setEnabled(true);
+    rightSpeed_->setEnabled(true);
+    leftSpeed_->setRange(-50, 100);
+    rightSpeed_->setRange(-50, 100);
 
-    m_leftSpeed->addTerm(new Ramp("BACK", 0, -25));
-    m_leftSpeed->addTerm(new Triangle("LOW",-25, 0, 25));
-    m_leftSpeed->addTerm(new Triangle("MEDIUM", 25, 50, 75));
-    m_leftSpeed->addTerm(new Ramp("HIGH", 50, 75));
-    m_rightSpeed->addTerm(new Ramp("BACK", 0, -25));
-    m_rightSpeed->addTerm(new Triangle("LOW",-25, 0, 25));
-    m_rightSpeed->addTerm(new Triangle("MEDIUM", 25, 50, 75));
-    m_rightSpeed->addTerm(new Ramp("HIGH", 50, 75));
-    m_engine->addOutputVariable(m_leftSpeed);
-    m_engine->addOutputVariable(m_rightSpeed);
+    leftSpeed_->addTerm(new Ramp("BACK", 0, -25));
+    leftSpeed_->addTerm(new Triangle("LOW",-25, 0, 25));
+    leftSpeed_->addTerm(new Triangle("MEDIUM", 25, 50, 75));
+    leftSpeed_->addTerm(new Ramp("HIGH", 50, 75));
+    rightSpeed_->addTerm(new Ramp("BACK", 0, -25));
+    rightSpeed_->addTerm(new Triangle("LOW",-25, 0, 25));
+    rightSpeed_->addTerm(new Triangle("MEDIUM", 25, 50, 75));
+    rightSpeed_->addTerm(new Ramp("HIGH", 50, 75));
+    engine_->addOutputVariable(leftSpeed_);
+    engine_->addOutputVariable(rightSpeed_);
 
-    m_ruleBlock = new RuleBlock;
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is LOW then "
+    ruleBlock_ = new RuleBlock;
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is LOW then "
                                      "LeftSpeed is LOW and RightSpeed is LOW",
-                                     m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is HIGH and "
                                      "GoalAngle is CENTER then "
                                      "LeftSpeed is HIGH and "
-                                     "RightSpeed is HIGH", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is HIGH", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is any and "
                                      "GoalAngle is LEFT_BEHIND then "
                                      "LeftSpeed is BACK and "
-                                     "RightSpeed is MEDIUM", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is MEDIUM", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is any and "
                                      "GoalAngle is RIGHT_BEHIND then "
                                      "LeftSpeed is MEDIUM and "
-                                     "RightSpeed is BACK", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is BACK", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is HIGH and "
                                      "GoalAngle is LEFT then "
                                      "LeftSpeed is MEDIUM and "
-                                     "RightSpeed is HIGH", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is HIGH", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is HIGH and "
                                      "GoalAngle is RIGHT then "
                                      "LeftSpeed is HIGH and "
-                                     "RightSpeed is MEDIUM", m_engine));
+                                     "RightSpeed is MEDIUM", engine_));
 
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is CENTER and "
                                      "GoalAngle is CENTER then "
                                      "LeftSpeed is MEDIUM and "
-                                     "RightSpeed is HIGH", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is HIGH", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is RIGHT and "
                                      "GoalAngle is CENTER then "
                                      "LeftSpeed is MEDIUM and "
-                                     "RightSpeed is HIGH", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is HIGH", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is LEFT and "
                                      "GoalAngle is CENTER then "
                                      "LeftSpeed is HIGH and "
-                                     "RightSpeed is MEDIUM", m_engine));
+                                     "RightSpeed is MEDIUM", engine_));
 
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is CENTER and "
                                      "GoalAngle is LEFT then "
                                      "LeftSpeed is MEDIUM and "
-                                     "RightSpeed is HIGH", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is HIGH", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is RIGHT and "
                                      "GoalAngle is LEFT then "
                                      "LeftSpeed is MEDIUM and "
-                                     "RightSpeed is HIGH", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is HIGH", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is LEFT and "
                                      "GoalAngle is LEFT then "
                                      "LeftSpeed is HIGH and "
-                                     "RightSpeed is MEDIUM", m_engine));
+                                     "RightSpeed is MEDIUM", engine_));
 
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is CENTER and "
                                      "GoalAngle is RIGHT then "
                                      "LeftSpeed is HIGH and "
-                                     "RightSpeed is MEDIUM", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is MEDIUM", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is RIGHT and "
                                      "GoalAngle is RIGHT then "
                                      "LeftSpeed is MEDIUM and "
-                                     "RightSpeed is HIGH", m_engine));
-    m_ruleBlock->addRule(Rule::parse("if GoalDistance is HIGH and "
+                                     "RightSpeed is HIGH", engine_));
+    ruleBlock_->addRule(Rule::parse("if GoalDistance is HIGH and "
                                      "ObstacleDistance is LOW and "
                                      "ObstacleAngle is LEFT and "
                                      "GoalAngle is RIGHT then "
                                      "LeftSpeed is HIGH and "
-                                     "RightSpeed is MEDIUM", m_engine));
+                                     "RightSpeed is MEDIUM", engine_));
 
-    m_engine->addRuleBlock(m_ruleBlock);
-    m_engine->configure("Minimum", "Maximum", "Minimum", "Maximum", "Centroid");
+    engine_->addRuleBlock(ruleBlock_);
+    engine_->configure("Minimum", "Maximum", "Minimum", "Maximum", "Centroid");
     std::string status;
-    if(!m_engine->isReady(&status))
+    if(!engine_->isReady(&status))
     {
         qDebug() << QString::fromStdString("The following errors "
                                            "were encountered:\n" + status);
@@ -178,22 +178,22 @@ Controller::Controller(QObject *parent) : QObject(parent),
         qDebug() << "Engine is Ready...";
     }
 
-    m_net = new NeuralNet;
-    m_net->loadNet("../RobotControl/signX6.net");
+    net_ = new NeuralNet;
+    net_->loadNet("../RobotControl/signX6.net");
 }
 
 Controller::~Controller()
 {
-    if(m_net)
+    if(net_)
     {
-        delete m_net;
+        delete net_;
     }
 }
 
 void Controller::controlAction()
 {
-    if((m_goal.x == 0) && (m_goal.y == 0)) return;
-    Robot2D &robot = RobotFinder::getRobotByNumber(m_robots, m_robotToControl);
+    if((goal_.x == 0) && (goal_.y == 0)) return;
+    Robot2D &robot = RobotFinder::getRobotByNumber(robots_, robotToControl_);
 
     //dumbController(robot);
     //fuzzyController(robot);
@@ -204,13 +204,13 @@ void Controller::dumbController(const Robot2D &robot)
 {
     RobotData data;
     RobotDataVector vec;
-    data.number = m_robotToControl;
-    double desiredAngle = atan2(robot.center.y - m_goal.y,
-            robot.center.x - m_goal.x);
+    data.number = robotToControl_;
+    double desiredAngle = atan2(robot.center.y - goal_.y,
+            robot.center.x - goal_.x);
     desiredAngle += M_PI;
 
-    if(sqrt(pow(robot.center.y - m_goal.y, 2) +
-            pow(robot.center.x - m_goal.x, 2)) < 25)
+    if(sqrt(pow(robot.center.y - goal_.y, 2) +
+            pow(robot.center.x - goal_.x, 2)) < 25)
     {
         data.cByte = STOP_BYTE;
         vec << data;
@@ -261,10 +261,10 @@ void Controller::dumbController(const Robot2D &robot)
 
 void Controller::fuzzyController(const Robot2D &robot)
 {
-    Robot2D &obstacle = RobotFinder::getRobotByNumber(m_robots, 2 - (m_robotToControl - 1));
-    double goalAngle = angleToPoint(robot, m_goal);
+    Robot2D &obstacle = RobotFinder::getRobotByNumber(robots_, 2 - (robotToControl_ - 1));
+    double goalAngle = angleToPoint(robot, goal_);
     double obstacleAngle = angleToPoint(robot, obstacle.center);
-    double goalDistance = RobotFinder::length(robot.center, m_goal);
+    double goalDistance = RobotFinder::length(robot.center, goal_);
     double obstacleDistance = RobotFinder::length(robot.center, obstacle.center);
 
     ControlData data;
@@ -367,10 +367,10 @@ void Controller::fuzzyController(const Robot2D &robot)
 
 void Controller::neuralNetController(const Robot2D &robot)
 {
-    Robot2D &obstacle = RobotFinder::getRobotByNumber(m_robots, 2 - (m_robotToControl - 1));
-    double goalAngle = angleToPoint(robot, m_goal);
+    Robot2D &obstacle = RobotFinder::getRobotByNumber(robots_, 2 - (robotToControl_ - 1));
+    double goalAngle = angleToPoint(robot, goal_);
     double obstacleAngle = angleToPoint(robot, obstacle.center);
-    double goalDistance = RobotFinder::length(robot.center, m_goal);
+    double goalDistance = RobotFinder::length(robot.center, goal_);
     double obstacleDistance = RobotFinder::length(robot.center, obstacle.center);
 
     DoubleVector input;
@@ -393,7 +393,7 @@ void Controller::neuralNetController(const Robot2D &robot)
 
     RobotData data;
     RobotDataVector vec;
-    data.number = m_robotToControl;
+    data.number = robotToControl_;
 
     if(goalDistance < 25)
     {
@@ -401,8 +401,8 @@ void Controller::neuralNetController(const Robot2D &robot)
     }
     else
     {
-        m_net->feedForward(input);
-        m_net->getResults(output);
+        net_->feedForward(input);
+        net_->getResults(output);
 
         qDebug() << output[0] << output[1] << output[2] << output[3] << output[4]
                 << output[5] << output[6] << output[7];

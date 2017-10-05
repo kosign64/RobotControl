@@ -28,30 +28,30 @@ protected:
     void keyReleaseEvent(QKeyEvent *ev);
 
 private:
-    QWidget *mainWidget;
-    QVBoxLayout *mainLayout;
-    QLineEdit *ipAddressEdit;
-    QPushButton *connectButton;
-    Socket *socket;
-    PlayField *field;
-    RobotFinder *robotFinder;
-    QVector <Robot2D> robots;
-    Controller *controller;
+    QWidget *mainWidget_;
+    QVBoxLayout *mainLayout_;
+    QLineEdit *ipAddressEdit_;
+    QPushButton *connectButton_;
+    Socket *socket_;
+    PlayField *field_;
+    RobotFinder *robotFinder_;
+    QVector <Robot2D> robots_;
+    Controller *controller_;
 
-    bool upPressed;
-    bool upLightPressed;
-    bool downPressed;
-    bool leftPressed;
-    bool rightPressed;
+    bool upPressed_;
+    bool upLightPressed_;
+    bool downPressed_;
+    bool leftPressed_;
+    bool rightPressed_;
 
-    bool start;
-    bool saveData;
+    bool start_;
+    bool saveData_;
 
-    int robotNumber;
+    int robotNumber_;
 
-    QString filename;
-    QFile file;
-    QTextStream fileStream;
+    QString filename_;
+    QFile file_;
+    QTextStream fileStream_;
 
 signals:
     void sendWheels(RobotDataVector vec);

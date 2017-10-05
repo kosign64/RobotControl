@@ -7,15 +7,15 @@
 #include <ctime>
 #include <clocale>
 
-NeuralNet::NeuralNet(double eta, double alpha) : m_recentAverageError(0),
-    m_recentAverageSmoothingFactor(0.5)
+NeuralNet::NeuralNet(double eta, double alpha) : recentAverageError_(0),
+    recentAverageSmoothingFactor_(0.5)
 {
     Neuron::setEta(eta);
     Neuron::setAlpha(alpha);
 }
 
-NeuralNet::NeuralNet(const vector<size_t> &topology, double eta, double alpha) : m_recentAverageError(0),
-    m_recentAverageSmoothingFactor(0.5)
+NeuralNet::NeuralNet(const vector<size_t> &topology, double eta, double alpha) : recentAverageError_(0),
+    recentAverageSmoothingFactor_(0.5)
 {
     srand(time(NULL));
     createNet(topology);
@@ -27,40 +27,40 @@ NeuralNet::NeuralNet(const vector<size_t> &topology, double eta, double alpha) :
 
 void NeuralNet::feedForward(const vector<double> &inputVals)
 {
-    assert(inputVals.size() == (m_layers[0].size() - 1));
+    assert(inputVals.size() == (layers_[0].size() - 1));
 
     for(size_t i = 0; i < inputVals.size(); ++i)
     {
-        m_layers[0][i].setOutputVal(inputVals[i]);
+        layers_[0][i].setOutputVal(inputVals[i]);
     }
-    for(size_t layerNum = 1; layerNum < m_layers.size(); ++layerNum)
+    for(size_t layerNum = 1; layerNum < layers_.size(); ++layerNum)
     {
-        Layer &prevLayer = m_layers[layerNum - 1];
-        for(size_t neuronNum = 0; neuronNum < m_layers[layerNum].size() - 1; ++neuronNum)
+        Layer &prevLayer = layers_[layerNum - 1];
+        for(size_t neuronNum = 0; neuronNum < layers_[layerNum].size() - 1; ++neuronNum)
         {
-            m_layers[layerNum][neuronNum].feedForward(prevLayer);
+            layers_[layerNum][neuronNum].feedForward(prevLayer);
         }
     }
 }
 
 void NeuralNet::backProp(const vector<double> &targetVals)
 {
-    assert(targetVals.size() == (m_layers.back().size() - 1));
+    assert(targetVals.size() == (layers_.back().size() - 1));
 
-    Layer &outputLayer = m_layers.back();
-    m_error = 0.0;
+    Layer &outputLayer = layers_.back();
+    error_ = 0.0;
 
     for(size_t n = 0; n < (outputLayer.size() - 1); ++n)
     {
         double delta = targetVals[n] - outputLayer[n].getOutputVal();
-        m_error += delta * delta;
+        error_ += delta * delta;
     }
-    m_error /= (outputLayer.size() - 1);
-    m_error = sqrt(m_error);
+    error_ /= (outputLayer.size() - 1);
+    error_ = sqrt(error_);
 
-    m_recentAverageError =
-            (m_recentAverageError * m_recentAverageSmoothingFactor + m_error) /
-            (m_recentAverageSmoothingFactor + 1.0);
+    recentAverageError_ =
+            (recentAverageError_ * recentAverageSmoothingFactor_ + error_) /
+            (recentAverageSmoothingFactor_ + 1.0);
 
     // Output Layer Gradients
     for(size_t n = 0; n < outputLayer.size() - 1; ++n)
@@ -69,10 +69,10 @@ void NeuralNet::backProp(const vector<double> &targetVals)
     }
 
     // Hidden Layers Gradients
-    for(size_t layerNum = m_layers.size() - 2; layerNum > 0; --layerNum)
+    for(size_t layerNum = layers_.size() - 2; layerNum > 0; --layerNum)
     {
-        Layer &hiddenLayer = m_layers[layerNum];
-        Layer &nextLayer = m_layers[layerNum + 1];
+        Layer &hiddenLayer = layers_[layerNum];
+        Layer &nextLayer = layers_[layerNum + 1];
 
         for(size_t n = 0; n < hiddenLayer.size(); ++n)
         {
@@ -81,10 +81,10 @@ void NeuralNet::backProp(const vector<double> &targetVals)
     }
 
     // Update connection weights
-    for(size_t layerNum = m_layers.size() - 1; layerNum > 0; --layerNum)
+    for(size_t layerNum = layers_.size() - 1; layerNum > 0; --layerNum)
     {
-        Layer &layer = m_layers[layerNum];
-        Layer &prevLayer = m_layers[layerNum - 1];
+        Layer &layer = layers_[layerNum];
+        Layer &prevLayer = layers_[layerNum - 1];
 
         for(size_t n = 0; n < layer.size() - 1; ++n)
         {
@@ -97,9 +97,9 @@ void NeuralNet::getResults(vector<double> &resultVals) const
 {
     resultVals.clear();
 
-    for(size_t n = 0; n < m_layers.back().size() - 1; ++n)
+    for(size_t n = 0; n < layers_.back().size() - 1; ++n)
     {
-        resultVals.push_back(m_layers.back()[n].getOutputVal());
+        resultVals.push_back(layers_.back()[n].getOutputVal());
     }
 }
 
@@ -117,7 +117,7 @@ double NeuralNet::train(size_t iterations, double error, const vector< vector<do
         {
             feedForward(inputs[n]);
             backProp(outputs[n]);
-            averageError += m_error;
+            averageError += error_;
         }
         cout << averageError << " " << averageError / size << endl << flush;
         if((averageError / size) < error)
@@ -136,14 +136,14 @@ void NeuralNet::createNet(const vector<size_t> &topology)
     size_t numberOfLayers = topology.size();
     for(size_t layerNum = 0; layerNum < numberOfLayers; ++layerNum)
     {
-        m_layers.push_back(Layer());
+        layers_.push_back(Layer());
         for(size_t neuronNum = 0; neuronNum <= topology[layerNum]; ++neuronNum)
         {
             size_t numOutputs = (layerNum == (numberOfLayers - 1)) ? 0 : topology[layerNum + 1];
-            m_layers.back().push_back(Neuron(numOutputs, neuronNum));
+            layers_.back().push_back(Neuron(numOutputs, neuronNum));
         }
 
-        m_layers.back().back().setOutputVal(1.0);
+        layers_.back().back().setOutputVal(1.0);
     }
 }
 
@@ -153,14 +153,14 @@ void NeuralNet::saveNet(const char *filename) const
     file.open(filename, ios::out);
     if(file.is_open())
     {
-        for(size_t l = 0; l < m_layers.size(); ++l)
+        for(size_t l = 0; l < layers_.size(); ++l)
         {
-            file << m_layers[l].size() - 1 << ";";
+            file << layers_[l].size() - 1 << ";";
         }
         file << endl;
-        for(size_t l = 0; l < m_layers.size() - 1; ++l)
+        for(size_t l = 0; l < layers_.size() - 1; ++l)
         {
-            const Layer &layer = m_layers[l];
+            const Layer &layer = layers_[l];
             for(size_t n = 0; n < layer.size(); ++n)
             {
                 vector <Connection> weights = layer[n].getWeights();
@@ -186,9 +186,9 @@ void NeuralNet::loadNet(const char *filename)
     file.open(filename, ios::in);
     if(file.is_open())
     {
-        if(m_layers.size() != 0)
+        if(layers_.size() != 0)
         {
-            m_layers.clear();
+            layers_.clear();
         }
         string line;
         getline(file, line);
@@ -205,15 +205,15 @@ void NeuralNet::loadNet(const char *filename)
         topology.pop_back();
         createNet(topology);
 
-        for(size_t layerNumber = 0; layerNumber < (m_layers.size() - 1); ++layerNumber)
+        for(size_t layerNumber = 0; layerNumber < (layers_.size() - 1); ++layerNumber)
         {
-            Layer &layer = m_layers[layerNumber];
-            Layer &nextLayer = m_layers[layerNumber + 1];
+            Layer &layer = layers_[layerNumber];
+            Layer &nextLayer = layers_[layerNumber + 1];
             vector <double> layerWeights;
             if(!getline(file, line))
             {
                 cerr << "Error while loading weights for layer" << layerNumber <<
-                        " of" << m_layers.size() << endl << flush;
+                        " of" << layers_.size() << endl << flush;
                 exit(-1);
             }
             istringstream stream(line);

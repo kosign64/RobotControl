@@ -24,10 +24,10 @@ public:
     void loadNet(const char *filename);
 
 private:
-    vector<Layer> m_layers; // m_layers[layerNum][neuronNum]
-    double m_error;
-    double m_recentAverageError;
-    double m_recentAverageSmoothingFactor;
+    vector<Layer> layers_; // m_layers[layerNum][neuronNum]
+    double error_;
+    double recentAverageError_;
+    double recentAverageSmoothingFactor_;
     void createNet(const vector<size_t> &topology);
 };
 

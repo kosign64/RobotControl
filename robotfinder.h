@@ -21,10 +21,10 @@ private:
         CHECK_ROBOT
     };
 
-    RobotVector m_robotsPrev;
-    RobotVector m_robotsStart;
-    bool m_start;
-    State m_state;
+    RobotVector robotsPrev_;
+    RobotVector robotsStart_;
+    bool start_;
+    State state_;
 
     bool findRobotsFromPoints(RobotVector &robotVector, const PointVector &pointVector) const;
 

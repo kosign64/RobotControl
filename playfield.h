@@ -11,7 +11,7 @@ public:
     explicit PlayField(QWidget *parent = 0);
     ~PlayField();
     QSize sizeHint() const {return QSize(800, 600);}
-    void invertDrawPath() {m_drawPath = !m_drawPath;}
+    void invertDrawPath() {drawPath_ = !drawPath_;}
 
 protected:
     void paintEvent(QPaintEvent *);
@@ -19,20 +19,20 @@ protected:
     void mousePressEvent(QMouseEvent *ev);
 
 private:
-    RobotVector m_robots;
-    double m_scaleFactor;
-    Point2D m_origin;
-    Point2D m_goal;
-    int m_keyboardControlNumber;
-    bool m_drawPath;
-    PointVector path;
+    RobotVector robots_;
+    double scaleFactor_;
+    Point2D origin_;
+    Point2D goal_;
+    int keyboardControlNumber_;
+    bool drawPath_;
+    PointVector path_;
 
 signals:
     void sendGoal(Point2D goal);
 
 public slots:
-    void getRobots(RobotVector rob) {m_robots = rob;}
-    void getRobotNumber(int number) {m_keyboardControlNumber = number;}
+    void getRobots(RobotVector rob) {robots_ = rob;}
+    void getRobotNumber(int number) {keyboardControlNumber_ = number;}
 };
 
 #endif // PLAYFIELD_H

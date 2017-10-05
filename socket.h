@@ -17,14 +17,13 @@ public:
     ~Socket();
     void sendWheels();
     bool connectToHost(const QString &address = "127.0.0.1");
-//    PointVector getPoints() {return points;}
 
 private:
-    QTcpSocket *m_socket;
-    bool m_connected;
-    uint16_t m_pointSize;
-    PointVector m_points;
-    RobotDataVector m_robotVector;
+    QTcpSocket *socket_;
+    bool connected_;
+    uint16_t pointSize_;
+    PointVector points_;
+    RobotDataVector robotVector_;
 
 signals:
     void sendPoints(PointVector &p);
@@ -33,7 +32,7 @@ public slots:
     void readyRead();
     void disconnected();
     void getError(QAbstractSocket::SocketError error);
-    void getRobotData(const RobotDataVector &data) {m_robotVector = data;}
+    void getRobotData(const RobotDataVector &data) {robotVector_ = data;}
 };
 
 #endif // SOCKET_H

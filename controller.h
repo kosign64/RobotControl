@@ -39,22 +39,22 @@ public:
     static double angleToPoint(const Robot2D &robot, const Point2D &point);
 
 private:
-    Point2D m_goal;
-    RobotVector m_robots;
-    int m_robotToControl;
+    Point2D goal_;
+    RobotVector robots_;
+    int robotToControl_;
 
     // Fuzzy Controller
-    Engine *m_engine;
-    InputVariable *m_goalDistance;
-    InputVariable *m_obstacleDistance;
-    InputVariable *m_goalAngle;
-    InputVariable *m_obstacleAngle;
-    OutputVariable *m_leftSpeed;
-    OutputVariable *m_rightSpeed;
-    RuleBlock *m_ruleBlock;
+    Engine *engine_;
+    InputVariable *goalDistance_;
+    InputVariable *obstacleDistance_;
+    InputVariable *goalAngle_;
+    InputVariable *obstacleAngle_;
+    OutputVariable *leftSpeed_;
+    OutputVariable *rightSpeed_;
+    RuleBlock *ruleBlock_;
 
     // Neural net Controller
-    NeuralNet *m_net;
+    NeuralNet *net_;
 
     void controlAction();
     void dumbController(const Robot2D &robot);
@@ -68,8 +68,8 @@ signals:
     void sendControlData(ControlData data);
 
 public slots:
-    void getGoal(Point2D goal) {m_goal = goal; controlAction();}
-    void getRobots(RobotVector robots) {m_robots = robots; controlAction();}
+    void getGoal(Point2D goal) {goal_ = goal; controlAction();}
+    void getRobots(RobotVector robots) {robots_ = robots; controlAction();}
 };
 
 #endif // CONTROLLER_H
