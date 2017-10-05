@@ -196,8 +196,8 @@ void Controller::controlAction()
     Robot2D &robot = RobotFinder::getRobotByNumber(m_robots, m_robotToControl);
 
     //dumbController(robot);
-    fuzzyController(robot);
-    //neuralNetController(robot);
+    //fuzzyController(robot);
+    neuralNetController(robot);
 }
 
 void Controller::dumbController(const Robot2D &robot)
