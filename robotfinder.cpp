@@ -1,8 +1,11 @@
 #include "robotfinder.h"
 #include <cmath>
 #include <cassert>
-#include <QDebug>
 #include <iostream>
+#include <chrono>
+#include <QDebug>
+
+using namespace std::chrono;
 
 RobotFinder::RobotFinder(QObject *parent) : QObject(parent),
     start_(true),
@@ -19,12 +22,13 @@ void RobotFinder::getPoints(PointVector &pointVector)
 
     static int numberOfRobots = robots.size() + 1;
     static int checkingRobotNumber = 1;
-    static const int stopTime = 1500;
-    static const int waitTime = 1500;
     if(checkingRobotNumber < numberOfRobots)
     {
         RobotData data;
         RobotDataVector vec;
+        static auto begin = high_resolution_clock::now();
+        high_resolution_clock::time_point end;
+        double time;
         switch (state_)
         {
         case RUN_ROBOT:
@@ -32,27 +36,28 @@ void RobotFinder::getPoints(PointVector &pointVector)
             {
                 robotsStart_ = robots;
             }
-            static int stopIteration = 0;
             data.number = checkingRobotNumber;
             data.cByte = FORWARD_BYTE;
             vec.append(data);
             emit sendRobotData(vec);
-            if(++stopIteration > stopTime)
+            end = high_resolution_clock::now();
+            time = duration_cast<milliseconds>(end - begin).count();
+            if(time > 400)
             {
-                stopIteration = 0;
+                begin = high_resolution_clock::now();
                 state_ = WAIT;
             }
             break;
 
         case WAIT:
-            static int waitIteration = 0;
             data.number = checkingRobotNumber;
             data.cByte = STOP_BYTE;
             vec.append(data);
             emit sendRobotData(vec);
-            if(++waitIteration > waitTime)
+            end = high_resolution_clock::now();
+            time = duration_cast<milliseconds>(end - begin).count();
+            if(time > 600)
             {
-                waitIteration = 0;
                 state_ = CHECK_ROBOT;
             }
             break;
@@ -87,6 +92,7 @@ void RobotFinder::getPoints(PointVector &pointVector)
             robotsStart_ = robots;
             checkingRobotNumber++;
             state_ = RUN_ROBOT;
+            begin = high_resolution_clock::now();
             break;
         }
     }
