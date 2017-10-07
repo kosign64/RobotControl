@@ -32,6 +32,7 @@ private:
     QVBoxLayout *mainLayout_;
     QLineEdit *ipAddressEdit_;
     QPushButton *connectButton_;
+    QPushButton *ignoreButton_;
     Socket *socket_;
     PlayField *field_;
     RobotFinder *robotFinder_;
@@ -43,6 +44,8 @@ private:
     bool downPressed_;
     bool leftPressed_;
     bool rightPressed_;
+
+    bool ignoreNumber_;
 
     bool start_;
     bool saveData_;
@@ -59,6 +62,7 @@ signals:
 
 private slots:
     void onConnectClick();
+    void onIgnoreClick();
     void getControlData(ControlData data);
 
 public slots:

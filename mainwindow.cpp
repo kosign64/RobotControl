@@ -11,6 +11,8 @@
 #include <cmath>
 #include <unistd.h>
 
+#define IGNORE_NUMBER 255
+
 enum Directions
 {
     STOP = 0,
@@ -30,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
       downPressed_(false),
       leftPressed_(false),
       rightPressed_(false),
+      ignoreNumber_(false),
       start_(true),
       saveData_(false),
       robotNumber_(1)
@@ -38,7 +41,9 @@ MainWindow::MainWindow(QWidget *parent)
     mainWidget_ = new QWidget(this);
     mainLayout_ = new QVBoxLayout;
     ipAddressEdit_ = new QLineEdit(mainWidget_);
-    connectButton_ = new QPushButton("Connect");
+    connectButton_ = new QPushButton("Connect", mainWidget_);
+    ignoreButton_ = new QPushButton("Send ignore number",
+                                    mainWidget_);
     socket_ = new Socket(this);
     field_ = new PlayField(this);
     robotFinder_ = new RobotFinder(this);
@@ -52,6 +57,8 @@ MainWindow::MainWindow(QWidget *parent)
             &RobotFinder::getPoints);
     connect(connectButton_, &QPushButton::clicked, this,
             &MainWindow::onConnectClick);
+    connect(ignoreButton_, &QPushButton::clicked, this,
+            &MainWindow::onIgnoreClick);
     connect(robotFinder_, &RobotFinder::sendRobots,
             field_, &PlayField::getRobots);
     connect(robotFinder_, &RobotFinder::sendRobotData,
@@ -71,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mainLayout_->addWidget(ipAddressEdit_);
     mainLayout_->addWidget(connectButton_);
+    mainLayout_->addWidget(ignoreButton_);
     mainLayout_->addWidget(field_);
     mainWidget_->setLayout(mainLayout_);
     setCentralWidget(mainWidget_);
@@ -184,7 +192,14 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
     {
         data.cByte = STOP_BYTE;
     }
-    data.number = robotNumber_;
+    if(ignoreNumber_)
+    {
+        data.number = IGNORE_NUMBER;
+    }
+    else
+    {
+        data.number = robotNumber_;
+    }
 
     vec.append(data);
 
@@ -195,7 +210,14 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
 void MainWindow::keyReleaseEvent(QKeyEvent *ev)
 {
     RobotData data;
-    data.number = robotNumber_;
+    if(ignoreNumber_)
+    {
+        data.number = IGNORE_NUMBER;
+    }
+    else
+    {
+        data.number = robotNumber_;
+    }
     RobotDataVector vec;
     switch(ev->key())
     {
@@ -310,5 +332,18 @@ void MainWindow::getControlData(ControlData data)
         }
 
         prevString = saveString;
+    }
+}
+
+void MainWindow::onIgnoreClick()
+{
+    ignoreNumber_ = !ignoreNumber_;
+    if(ignoreNumber_)
+    {
+        ignoreButton_->setText("Send real robot number");
+    }
+    else
+    {
+        ignoreButton_->setText("Send ignore number");
     }
 }
