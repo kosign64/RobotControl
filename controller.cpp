@@ -192,8 +192,9 @@ Controller::~Controller()
 
 void Controller::controlAction()
 {
-    if((goal_.x == 0) && (goal_.y == 0)) return;
-    Robot2D &robot = RobotFinder::getRobotByNumber(robots_, robotToControl_);
+    if(((goal_.x == 0) && (goal_.y == 0)) || robots_.empty()) return;
+    Robot2D &robot = RobotFinder::getRobotByNumber(robots_,
+                                                   robotToControl_);
 
     //dumbController(robot);
     //fuzzyController(robot);
