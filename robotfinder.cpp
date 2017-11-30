@@ -14,14 +14,17 @@ RobotFinder::RobotFinder(QObject *parent) : QObject(parent),
 
 }
 
-void RobotFinder::getPoints(PointVector &pointVector)
+void RobotFinder::setPoints(PointVector &pointVector)
 {
     RobotVector robots;
     if(!findRobotsFromPoints(robots, pointVector)) return;
     if(robots.isEmpty()) return;
 
+    // because robot numbers start from 1
     static int numberOfRobots = robots.size() + 1;
     static int checkingRobotNumber = 1;
+    // Initialization
+    // Check robots' numbers and directions
     if(checkingRobotNumber < numberOfRobots)
     {
         RobotData data;
@@ -42,6 +45,7 @@ void RobotFinder::getPoints(PointVector &pointVector)
             emit sendRobotData(vec);
             end = high_resolution_clock::now();
             time = duration_cast<milliseconds>(end - begin).count();
+            // Drive robot for at least 400 ms
             if(time > 400)
             {
                 begin = high_resolution_clock::now();
@@ -123,6 +127,7 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
             if(length(pointsRaw[i], pointsRaw[j]) < 10)
             {
                 newPoint = false;
+                break;
             }
         }
         if(newPoint)
@@ -132,7 +137,7 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
     }
     if(!pointsRaw.empty())
     {
-        points.append(pointsRaw[pointsRaw.size() - 1]);
+        points.append(pointsRaw.back());
     }
 
     // Find Robots
@@ -159,7 +164,7 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                 double angle = atan2(robot.points[0].y - robot.points[1].y,
                                      robot.points[0].x - robot.points[1].x);
                 robot.center = center(robot.points[0], robot.points[1]);
-                robot.angle = angle + M_PI / 2.;
+                robot.angle = angle + M_PI_2;
                 if(start_)
                 {
                     robotNum++;
@@ -185,13 +190,13 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                     bool needFix = true;
                     double angle;
 
-                    if((robotsPrev_[nearest].angle > (3.75 * M_PI / 2.) ||
-                        (robotsPrev_[nearest].angle < M_PI / 4.)) &&
+                    if((robotsPrev_[nearest].angle > (3.75 * M_PI_2) ||
+                        (robotsPrev_[nearest].angle < M_PI_4)) &&
                             (fabs(robotsPrev_[nearest].angle - robot.angle) > (0.3 * M_PI)))
                     {
-                        if(robotsPrev_[nearest].angle > (3.75 * M_PI / 2.))
+                        if(robotsPrev_[nearest].angle > (3.75 * M_PI_2))
                         {
-                            if(robot.angle < (M_PI / 4.))
+                            if(robot.angle < (M_PI_4))
                             {
                                 angle = robot.angle;
                                 needFix = false;
@@ -199,7 +204,7 @@ bool RobotFinder::findRobotsFromPoints(RobotVector &robotVector, const PointVect
                         }
                         else
                         {
-                            if(robot.angle > (M_PI / 2.))
+                            if(robot.angle > (M_PI_2))
                             {
                                 angle = robot.angle + M_PI;
                                 needFix = false;

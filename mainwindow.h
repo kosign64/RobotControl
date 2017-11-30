@@ -63,7 +63,7 @@ signals:
 private slots:
     void onConnectClick();
     void onIgnoreClick();
-    void getControlData(ControlData data);
+    void setControlData(ControlData data);
 
 public slots:
 

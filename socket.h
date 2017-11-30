@@ -32,7 +32,7 @@ public slots:
     void readyRead();
     void disconnected();
     void getError(QAbstractSocket::SocketError error);
-    void getRobotData(const RobotDataVector &data) {robotVector_ = data;}
+    void setRobotData(const RobotDataVector &data) {robotVector_ = data;}
 };
 
 #endif // SOCKET_H

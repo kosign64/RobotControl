@@ -39,7 +39,7 @@ signals:
     void sendRobotData(RobotDataVector data);
 
 public slots:
-    void getPoints(PointVector &pointVector);
+    void setPoints(PointVector &pointVector);
 };
 
 #endif // ROBOTFINDER_H

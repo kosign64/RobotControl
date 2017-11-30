@@ -54,27 +54,27 @@ MainWindow::MainWindow(QWidget *parent)
     ipAddressEdit_->setAlignment(Qt::AlignCenter);
 
     connect(socket_, &Socket::sendPoints, robotFinder_,
-            &RobotFinder::getPoints);
+            &RobotFinder::setPoints);
     connect(connectButton_, &QPushButton::clicked, this,
             &MainWindow::onConnectClick);
     connect(ignoreButton_, &QPushButton::clicked, this,
             &MainWindow::onIgnoreClick);
     connect(robotFinder_, &RobotFinder::sendRobots,
-            field_, &PlayField::getRobots);
+            field_, &PlayField::setRobots);
     connect(robotFinder_, &RobotFinder::sendRobotData,
-            socket_, &Socket::getRobotData);
+            socket_, &Socket::setRobotData);
     connect(this, &MainWindow::sendWheels, socket_,
-            &Socket::getRobotData);
+            &Socket::setRobotData);
     connect(field_, &PlayField::sendGoal, controller_,
-            &Controller::getGoal);
+            &Controller::setGoal);
     connect(robotFinder_, &RobotFinder::sendRobots, controller_,
-            &Controller::getRobots);
+            &Controller::setRobots);
     connect(controller_, &Controller::sendRobotData,
-            socket_, &Socket::getRobotData);
+            socket_, &Socket::setRobotData);
     connect(this, &MainWindow::sendRobotNumber, field_,
-            &PlayField::getRobotNumber);
+            &PlayField::setRobotNumber);
     connect(controller_, &Controller::sendControlData,
-            this, &MainWindow::getControlData);
+            this, &MainWindow::setControlData);
 
     mainLayout_->addWidget(ipAddressEdit_);
     mainLayout_->addWidget(connectButton_);
@@ -279,7 +279,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
     emit sendWheels(vec);
 }
 
-void MainWindow::getControlData(ControlData data)
+void MainWindow::setControlData(ControlData data)
 {
     static QString prevString;
     QString saveString;

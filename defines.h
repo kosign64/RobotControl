@@ -6,13 +6,13 @@
 
 #define _BV(b) (1 << (b))
 
-#define G   6
-#define DR  5
-#define VR1 4
-#define VR0 3
-#define DL  2
-#define VL1 1
-#define VL0 0
+#define G   6 // Enable bit
+#define DR  5 // Direction of right wheel (1 - forward, 0 - backward)
+#define VR1 4 // Velocity of right wheel bit #1
+#define VR0 3 // Velocity of right wheel bit #0
+#define DL  2 // Direction of left wheel (1 - forward, 0 - backward)
+#define VL1 1 // Velocity of left wheel bit #1
+#define VL0 0 // Velocity of left wheel bit #0
 
 #define FORWARD_BYTE (_BV(G) | _BV(DL) | _BV(VL1) | _BV(DR) | _BV(VR1))
 #define FORWARD_LIGHT_BYTE (_BV(G) | _BV(DL) | _BV(VL0) | _BV(DR) | _BV(VR0))

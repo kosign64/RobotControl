@@ -31,8 +31,8 @@ signals:
     void sendGoal(Point2D goal);
 
 public slots:
-    void getRobots(RobotVector rob) {robots_ = rob;}
-    void getRobotNumber(int number) {keyboardControlNumber_ = number;}
+    void setRobots(RobotVector rob) {robots_ = rob;}
+    void setRobotNumber(int number) {keyboardControlNumber_ = number;}
 };
 
 #endif // PLAYFIELD_H

@@ -68,8 +68,8 @@ signals:
     void sendControlData(ControlData data);
 
 public slots:
-    void getGoal(Point2D goal) {goal_ = goal; controlAction();}
-    void getRobots(RobotVector robots) {robots_ = robots; controlAction();}
+    void setGoal(Point2D goal) {goal_ = goal; controlAction();}
+    void setRobots(RobotVector robots) {robots_ = robots; controlAction();}
 };
 
 #endif // CONTROLLER_H
