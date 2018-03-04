@@ -3,11 +3,11 @@
 The programm implements neural network and fuzzy logic controllers with robot position visualization for remote control robots at Control Systems Department of Saint Petersburg Electrotechnical University "LETI"
 
 ## Tech
-The programm connects to remote server via TCP and receives positions of all robots' light-reflecting points. It determines positions and orientations of each robot during initialization process. It sends controll action to the server according with neural network or fuzzy logic control system and desired robot position.
+The programm connects to remote server via TCP and receives positions of all robots' light-reflecting points. It determines positions and orientations of each robot during initialization process. It sends controll action to the server according to neural network or fuzzy logic control system and desired robot position.
 
 ## Example of work
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/OeGGMX6ei0U/0.jpg)](http://www.youtube.com/watch?v=OeGGMX6ei0U "Video Title")
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/OeGGMX6ei0U/0.jpg)](http://www.youtube.com/watch?v=OeGGMX6ei0U "Remote control robots with neural network controller")
 
 ### Dependencies
 [Qt] - C++ Framework\
