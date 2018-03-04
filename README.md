@@ -10,7 +10,7 @@ The programm connects to remote server via TCP and receives positions of all rob
 [![IMAGE ALT TEXT](http://img.youtube.com/vi/OeGGMX6ei0U/0.jpg)](http://www.youtube.com/watch?v=OeGGMX6ei0U "Video Title")
 
 ### Dependencies
-[Qt] - C++ Framework
+[Qt] - C++ Framework\
 [Fuzzy Lite] - Fuzzy Logic library
 
 [Qt]: https://www.qt.io
