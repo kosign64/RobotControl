@@ -7,7 +7,7 @@ The programm connects to remote server via TCP and receives positions of all rob
 
 ## Example of work
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/OeGGMX6ei0U/0.jpg)](http://www.youtube.com/watch?v=OeGGMX6ei0U "Remote control robots with neural network controller")
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/-wld90cr9TA/0.jpg)](http://www.youtube.com/watch?v=-wld90cr9TA "Remote control robots with neural network controller")
 
 ### Dependencies
 [Qt] - C++ Framework\
